@@ -12,6 +12,7 @@
 
 namespace Config
 {
+#ifdef _WIN32
     std::map<enum ConfigFiles, const std::string> AbstractConfig::paths =
     {
         std::pair<enum ConfigFiles, std::string>(ConfigFiles::GeneralConfig, getDir(CSIDL_APPDATA) + "config.json"),
@@ -19,9 +20,19 @@ namespace Config
         std::pair<enum ConfigFiles, std::string>(ConfigFiles::LanguageFile, getDir(CSIDL_PROGRAM_FILESX86) + "\\language\\")
     };
 
+#else
+    std::map<enum ConfigFiles, const std::string> AbstractConfig::paths =
+    {
+        std::pair<enum ConfigFiles, std::string>(ConfigFiles::GeneralConfig, "config.json"),
+        std::pair<enum ConfigFiles, std::string>(ConfigFiles::Serverlist, "serverlist.json"),
+        std::pair<enum ConfigFiles, std::string>(ConfigFiles::LanguageFile, "\\language\\")
+    };
+#endif
+
+
+#ifdef _WIN32
     std::string AbstractConfig::getDir(int id)
     {
-#ifdef _WIN32
         LPWSTR strPath = new WCHAR[2048];
         SHGetSpecialFolderPath(0, strPath, id, FALSE);
         std::wstring ws_temp(strPath);
@@ -33,6 +44,7 @@ namespace Config
 
         return dir.append("\\TicTacToe\\");
 #else
+
         std::string homeDir = std::getenv("HOME");
         return homeDir.append("/.TicTacToe/");
 #endif
@@ -51,7 +63,7 @@ namespace Config
         object["difficulty"] = static_cast<int>(difficulty);
         object["version"] = version;
 
-        std::filesystem::path path(getDir());
+        std::filesystem::path path(this->path);
         if (!std::filesystem::exists(path))
         {
             std::filesystem::create_directory(path);
