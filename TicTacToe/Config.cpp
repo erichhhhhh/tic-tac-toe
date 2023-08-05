@@ -135,4 +135,45 @@ namespace Config
 
         
     }
+    bool Language::deserialize()
+    {
+        std::ifstream input(path);
+
+        if (!input.good())
+        {
+            return false;
+        }
+
+        std::string jsonString;
+
+        if (input)
+        {
+            std::ostringstream stream;
+            stream << input.rdbuf();
+            jsonString = stream.str();
+        }
+
+        Json::Value object;
+        Json::Reader().parse(jsonString, object);
+
+        lang = object["lang"].asString();
+        name = object["name"].asString();
+        region = object["region"].asString();
+        const Json::Value& translationsJSON = object["translations"];
+        for (int i = 0; i < translationsJSON.size(); i++)
+        {
+            std::stringstream complete;
+            complete.str(translationsJSON[i].asString());
+            std::string part;
+            std::vector<std::string> devided;
+
+            while (std::getline(complete, part, ':'))
+            {
+                devided.push_back(part);
+            }
+
+            translations.insert(std::pair<std::string, std::string>(devided.at(0), devided.at(1)));
+        }
+        return true;
+    }
 }

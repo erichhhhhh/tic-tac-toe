@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <sstream>
 #include <ShlObj.h>
 
 #include "Player.h"
@@ -121,6 +122,8 @@ namespace Config
 			path = paths.at(type) + name;
 			version = 1;
 		}
+
+		bool deserialize() override;
 
 	private:
 		std::string lang;

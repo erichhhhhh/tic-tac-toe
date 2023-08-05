@@ -2,7 +2,7 @@
   "lang": "de-de",
   "name": "Deutsch",
   "region": "Deutschland",
-  "values": [
-
-  ]
+  "translations": {
+    "tictactoe-name": "TicTacToe"
+  }
 }
