@@ -12,12 +12,19 @@
 #include "FieldAnalyser.h"
 #include "Config.h"
 
-void mainMenu(const bool playDisabled, Config::Config& config)
+void mainMenu(bool playDisabled, Config::Config& config)
 {
 	bool abort = false;
 	while (!abort)
 	{
-		std::cout << "Erichhh pr\204sentiert:" << std::endl;
+		if(playDisabled)
+		{
+			if (config.deserialize())
+			{
+				playDisabled = false;
+			}
+		}
+		std::cout << "Erik Gerk pr\204sentiert:" << std::endl;
 
 		std::string tictactoe_title =
 			"   _____  _      _____           _____             \n"
@@ -119,8 +126,8 @@ void launchGame(Config::Config& config)
 	if (testVal == Config::PlayerAmount::COMPUTER_ONLY)
 	{
 		bool player1Max = static_cast<bool>(std::rand() % 2);
-		Player player1(FieldType::PLAYER1, PlayerType::COMPUTER, Symbol::X, player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
-		Player player2(FieldType::PLAYER2, PlayerType::COMPUTER, Symbol::O, !player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, !player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
+		Player player1(FieldType::PLAYER1, PlayerType::COMPUTER, Symbol::X, player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, !player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
+		Player player2(FieldType::PLAYER2, PlayerType::COMPUTER, Symbol::O, !player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
 	}
 	else if (testVal == Config::PlayerAmount::COMPUTER_PLAYER)
 	{

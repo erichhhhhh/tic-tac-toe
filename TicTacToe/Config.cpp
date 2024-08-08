@@ -12,23 +12,34 @@
 
 namespace Config
 {
-#ifdef _WIN32
-    std::map<enum ConfigFiles, const std::string> AbstractConfig::paths =
+
+    AbstractConfig::Path::Path(std::string directory, std::string filename)
     {
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::GeneralConfig, getDir(CSIDL_APPDATA) + "config.json"),
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::Serverlist, getDir(CSIDL_APPDATA) + "serverlist.json"),
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::LanguageFile, getDir(CSIDL_PROGRAM_FILESX86) + "\\language\\")
+        this->directory = directory;
+        this->filename = filename;
+    }
+
+    std::string AbstractConfig::Path::getPath()
+    {
+        return directory + filename;
+    }
+
+#ifdef _WIN32
+    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::paths =
+    {
+        std::pair <enum ConfigFiles, AbstractConfig::Path> (ConfigFiles::GeneralConfig, AbstractConfig::Path(getDir(CSIDL_APPDATA), "config.json")),
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path(getDir(CSIDL_APPDATA), "serverlist.json")),
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path(getDir(CSIDL_PROGRAM_FILESX86) + "\\language\\", ""))
     };
 
 #else
-    std::map<enum ConfigFiles, const std::string> AbstractConfig::paths =
+    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::paths =
     {
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::GeneralConfig, "config.json"),
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::Serverlist, "serverlist.json"),
-        std::pair<enum ConfigFiles, std::string>(ConfigFiles::LanguageFile, "\\language\\")
+        std::pair <enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::GeneralConfig, AbstractConfig::Path("", "/config.json")),
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path("", "/serverlist.json")),
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path("" + "/language/", ""))
     };
 #endif
-
 
 #ifdef _WIN32
     std::string AbstractConfig::getDir(int id)
@@ -63,13 +74,20 @@ namespace Config
         object["difficulty"] = static_cast<int>(difficulty);
         object["version"] = version;
 
-        std::filesystem::path path(this->path);
+        std::filesystem::path path(this->path.directory);
         if (!std::filesystem::exists(path))
         {
-            std::filesystem::create_directory(path);
+            try
+            {
+                std::filesystem::create_directory(path);
+            }
+            catch (std::exception e)
+            {
+                std::cout << e.what() << std::endl;
+            }
         }
 
-        std::ofstream output(this->path);
+        std::ofstream output(this->path.getPath());
         output << Json::writeString(factory, object);
         output.close();
 
@@ -78,7 +96,7 @@ namespace Config
 
     bool Config::deserialize()
     {
-        std::ifstream input(path);
+        std::ifstream input(path.getPath());
 
         if (!input.good())
         {
@@ -137,7 +155,7 @@ namespace Config
     }
     bool Language::deserialize()
     {
-        std::ifstream input(path);
+        std::ifstream input(path.getPath());
 
         if (!input.good())
         {

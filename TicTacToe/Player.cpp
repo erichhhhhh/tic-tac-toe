@@ -292,6 +292,7 @@ MinimaxRole operator!(const MinimaxRole& other)
 			break;
 		case MinimaxRole::MAX:
 			return MinimaxRole::MIN;
+			break;
 		default:
 			return other;
 			break;

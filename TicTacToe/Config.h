@@ -25,6 +25,7 @@ namespace Config
 
 	enum class ConfigFiles
 	{
+		ABSTRACT,
 		GeneralConfig,
 		Serverlist,
 		LanguageFile
@@ -32,18 +33,29 @@ namespace Config
 
 	class AbstractConfig
 	{
-	protected:
-
-		enum ConfigFiles type;
-		std::string path;
-		int8_t version = 0;
-
-		static std::string getDir(int id);
-		static std::map<enum ConfigFiles, const std::string> paths;
-
 	public:
 		virtual bool serialize() = 0;
 		virtual bool deserialize() = 0;
+
+		struct Path
+		{
+			std::string directory;
+			std::string filename;
+
+			Path() {}
+			Path(std::string directory, std::string filename);
+			std::string getPath();
+		};
+
+	protected:
+
+		enum ConfigFiles type = ConfigFiles::ABSTRACT;
+		Path path;
+		int8_t version = 0;
+
+		static std::string getDir(int id);
+
+		static std::map <enum ConfigFiles, Path> paths;
 	};
 
 
@@ -119,7 +131,8 @@ namespace Config
 		Language(std::string name)
 		{
 			type = ConfigFiles::LanguageFile;
-			path = paths.at(type) + name;
+			path = paths.at(type);
+			path.filename = name;
 			version = 1;
 		}
 

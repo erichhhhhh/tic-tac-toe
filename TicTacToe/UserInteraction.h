@@ -8,7 +8,7 @@
 #include "Config.h"
 
 inline std::map<int8_t, int8_t> keymap = { {0, 7},{1, 8},{2, 9},{3, 4},{4, 5},{5, 6},{6, 1},{7, 2},{8, 3} };
-void mainMenu(const bool playDisabled, Config::Config& config);
+void mainMenu(bool playDisabled, Config::Config& config);
 
 void launchGame(Config::Config& config);
 
