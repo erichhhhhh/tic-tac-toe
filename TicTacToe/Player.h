@@ -8,13 +8,14 @@ class Player
 	private:
 		enum class Symbol symbol;
 		enum class PlayerType type;
-		enum FieldType playerFieldType;
+		enum class FieldType playerFieldType;
 		std::string symbolString;
 		enum class MinimaxRole minimaxRole;
 		enum class WinningDetection winningDetection;
 
 		static inline std::map<enum FieldType, Player> playerlist;
-		Player(enum class FieldType playerFieldType, enum class PlayerType type, enum class Symbol symbol, std::string symbolString, enum class MinimaxRole minimaxRole, enum class WinningDetection winningDetection) : playerFieldType(playerFieldType), type(type), symbol(symbol), symbolString(symbolString), minimaxRole(minimaxRole), winningDetection(winningDetection) {}
+		Player(enum class FieldType playerFieldType, enum class PlayerType type, enum class Symbol symbol, std::string symbolString, enum class MinimaxRole minimaxRole, enum class WinningDetection winningDetection) 
+			: playerFieldType(playerFieldType), type(type), symbol(symbol), symbolString(symbolString), minimaxRole(minimaxRole), winningDetection(winningDetection) {}
 
 	public:
 		static int8_t minimax(Field& field, Player& player);
@@ -23,14 +24,14 @@ class Player
 
 		bool isComputer();
 		enum class Symbol getSymbol();
-		enum FieldType getPlayerFieldType();
+		enum class FieldType getPlayerFieldType();
 		std::string getSymbolString();
 		enum class MinimaxRole getMinimaxRole();
 		enum class WinningDetection getWinningDetection();
 
-		static Player& getPlayer(enum FieldType fieldType);
+		static Player& getPlayer(enum class FieldType fieldType);
 
-		static void addPlayer(enum FieldType fieldType, Player& player);
+		static void addPlayer(enum class FieldType fieldType, Player& player);
 		static void flushPlayerlist();
 		void playerInput(Player& player, Field& field);
 		void play(Field& field);

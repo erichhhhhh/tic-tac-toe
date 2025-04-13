@@ -55,8 +55,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="de-de.json">
+    <None Include="de-DE.json">
       <Filter>Ressourcendateien</Filter>
     </None>
+    <None Include="en-US.json">
+      <Filter>Ressourcendateien</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\tic-tac-toe.ico">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
   </ItemGroup>
 </Project>

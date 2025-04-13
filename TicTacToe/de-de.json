@@ -1,8 +1,34 @@
 {
-  "lang": "de-de",
+  "lang": "de-DE",
   "name": "Deutsch",
   "region": "Deutschland",
-  "translations": {
-    "tictactoe-name": "TicTacToe"
-  }
+  "translations": [
+    [ "title.presentation", "Erik Gerk pr\204sentiert:" ],
+    [ "title.title_art", "   _____  _      _____           _____             \n  |_   _|(_)    |_   _|         |_   _|            \n    | |   _   ___ | |  __ _   ___ | |  ___    ___  \n    | |  | | / __|| | / _` | / __|| | / _ \\  / _ \\ \n    | |  | || (__ | || (_| || (__ | || (_) ||  __/ \n    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n                                                   " ],
+    [ "title.play", "1) Spielen" ],
+    [ "title.multiplayer", "2) Onlinespiel" ],
+    [ "title.settings", "3) Einstellungen" ],
+    [ "title.exit", "0) Beenden" ],
+    [ "symbol.X", "X" ],
+    [ "symbol.O", "O" ],
+    [ "settings.yes", "Ja" ],
+    [ "settings.no", "Nein" ],
+    [ "settings.settings", "Einstellungen" ],
+    [ "settings.temp_settings", "Spielparameter" ],
+    [ "settings.symbol", "\n\t1) Symbol\t\t(Spieler 1): [{}]\n\t\t\t\t(Spieler 2): [{}]\n" ],
+    [ "settings.player_amount", "\t2) Spielerkonfiguration\t[{}]\n" ],
+    [ "settings.player_amount.computer_only", "Nur Computer" ],
+    [ "settings.player_amount.computer_and_player", "Computer und Spieler" ],
+    [ "settings.player_amount.player_only", "Nur Spieler" ],
+    [ "settings.is_symbol_enforced", "\t3) Symbol erzwingen\t[{}] (Symbol wird im Onlinespiel entgegen Darstellung des Gegners erzwungen)\n" ],
+    [ "settings.first_player", "\t4) Klassische\n\t   Spielerreihenfolge\t[{}] (Wenn diese Option aktiviert ist, beginnt Spieler 1 das Spiel,\n\t\t\t\t\tansonsten Spieler 2)\n" ],
+    [ "settings.settings_before_game", "\t5) Parameter vor\n\t   Spielbeginn\t\t[{}] (Wenn aktiviert, werden vor jedem Spiel die Einstellungen gezeigt)\n" ],
+    [ "settings.difficulty", "\t6) Schwierigkeitsgrad\t[{}]\n" ],
+    [ "settings.difficulty.easy", "Einfach" ],
+    [ "settings.difficulty.medium", "Mittel" ],
+    [ "settings.difficulty.hard", "Schwer" ],
+    [ "settings.abort_game", "\t9) Spiel abbrechen\n" ],
+    [ "settings.start_game", "\t0) Zum Spiel" ],
+    [ "settings.save_settings", "\t0) Einstellungen speichern" ]
+  ]
 }

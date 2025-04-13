@@ -60,7 +60,6 @@ int8_t Player::minimax(Field& origField, Player& player)
 			}
 		}
 	}
-	int8_t test = field.fullness();
 
 	if (field.fullness() == 0)
 	{
@@ -256,16 +255,20 @@ void Player::play(Field& field)
 void Player::playerInput(Player& player, Field& field)
 {
 	std::map<int8_t, int8_t> keymap = { {7, 0}, {8, 1}, {9, 2}, {4, 3}, {5, 4}, {6, 5}, {1, 6}, {2, 7}, {3, 8} };
-	int i_input = numericInput<int>();
+	bool inputSuccessful = false;
 
-	try
+	while (!inputSuccessful)
 	{
-		field.setPlayAt(keymap.at(i_input), player.getPlayerFieldType());
-	}
-	catch (std::exception e)
-	{
-		std::cout << "Eingabe gescheitert, bitte erneut versuchen" << std::endl;
-		playerInput(player, field);
+		int i_input = numericInput<int>();
+		try
+		{
+			field.setPlayAt(keymap.at(i_input), player.getPlayerFieldType());
+			inputSuccessful = true;
+		}
+		catch (std::exception e)
+		{
+			std::cout << "Eingabe gescheitert, bitte erneut versuchen" << std::endl;
+		}
 	}
 }
 

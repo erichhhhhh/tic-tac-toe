@@ -2,7 +2,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <tuple>
 
 #include <json/json.h>
@@ -29,7 +28,7 @@ namespace Config
     {
         std::pair <enum ConfigFiles, AbstractConfig::Path> (ConfigFiles::GeneralConfig, AbstractConfig::Path(getDir(CSIDL_APPDATA), "config.json")),
         std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path(getDir(CSIDL_APPDATA), "serverlist.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path(getDir(CSIDL_PROGRAM_FILESX86) + "\\language\\", ""))
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
     };
 
 #else
@@ -83,7 +82,7 @@ namespace Config
             }
             catch (std::exception e)
             {
-                std::cout << e.what() << std::endl;
+                //std::cout << e.what() << std::endl;
             }
         }
 
@@ -133,32 +132,57 @@ namespace Config
         return true;
     }
 
+    bool Config::setLanguage(std::string lang)
+    {
+        try
+        {
+            Language::loadLanguage(lang);
+            language = lang;
+            return true;
+        }
+        catch (LanguageNotReadableException e)
+        {
+            return false;
+        }
+    }
+
     bool Config::operator==(const Config& config) const
     {
-        return std::tie(preferedSymbol, playerAmount, enforceSymbol, firstPlayer, showSettingsBeforeGame, difficulty)
-            == std::tie(config.preferedSymbol, config.playerAmount, config.enforceSymbol, config.firstPlayer, config.showSettingsBeforeGame, config.difficulty);
+        return std::tie(preferedSymbol, playerAmount, enforceSymbol, firstPlayer, showSettingsBeforeGame, difficulty, language)
+            == std::tie(config.preferedSymbol, config.playerAmount, config.enforceSymbol, config.firstPlayer, config.showSettingsBeforeGame, config.difficulty, config.language);
     }
 
     Config& Config::operator=(const Config& config)
     {
-        Config newConfig;
-        newConfig.preferedSymbol = config.preferedSymbol;
-        newConfig.playerAmount = config.playerAmount;
-        newConfig.enforceSymbol = config.enforceSymbol;
-        newConfig.firstPlayer = config.firstPlayer;
-        newConfig.showSettingsBeforeGame = config.showSettingsBeforeGame;
-        newConfig.difficulty = config.difficulty;
+        this->preferedSymbol = config.preferedSymbol;
+        this->playerAmount = config.playerAmount;
+        this->enforceSymbol = config.enforceSymbol;
+        this->firstPlayer = config.firstPlayer;
+        this->showSettingsBeforeGame = config.showSettingsBeforeGame;
+        this->difficulty = config.difficulty;
+        this->language = config.language;
 
-        return newConfig;
-
+        return *this;
         
     }
+
+    Language::Language(std::string name)
+    {
+        type = ConfigFiles::LanguageFile;
+        path = paths.at(type);
+        path.filename = name;
+        version = 1;
+        bool functional = deserialize();
+
+    }
+
     bool Language::deserialize()
     {
-        std::ifstream input(path.getPath());
+        std::ifstream input(path.getPath() + ".json");
 
         if (!input.good())
         {
+            throw LanguageNotReadableException("Failed to load language file: " + path.filename);
             return false;
         }
 
@@ -178,20 +202,65 @@ namespace Config
         name = object["name"].asString();
         region = object["region"].asString();
         const Json::Value& translationsJSON = object["translations"];
-        for (int i = 0; i < translationsJSON.size(); i++)
+        for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
         {
-            std::stringstream complete;
-            complete.str(translationsJSON[i].asString());
-            std::string part;
-            std::vector<std::string> devided;
-
-            while (std::getline(complete, part, ':'))
-            {
-                devided.push_back(part);
-            }
-
-            translations.insert(std::pair<std::string, std::string>(devided.at(0), devided.at(1)));
+            const Json::Value& translation = translationsJSON[i];
+            translations.insert(std::pair<std::string, std::string>(translation[0].asString(), translation[1].asString()));
         }
         return true;
+    }
+
+    std::vector<Language> Language::listLanguages()
+    {
+        try
+        {
+            std::vector<Language> langs;
+            for (const auto& entry : std::filesystem::directory_iterator(paths.at(ConfigFiles::LanguageFile).getPath()))
+            {
+                Language lang = Language(entry.path().stem().string());
+                lang.deserialize();
+                langs.push_back(lang);
+            }
+            return langs;
+        }
+        catch (std::exception e)
+        {
+            throw LanguageNotReadableException();
+            return {};
+        }
+    }
+
+    bool Language::loadLanguage(std::string name)
+    {
+        Language lang = Language(name);
+        loadedLanguage = std::make_unique<Language>(lang);
+        return true;
+    }
+
+    std::string Language::getTranslation(std::string key)
+    {
+        if (loadedLanguage != nullptr)
+        {
+            if (loadedLanguage->translations.contains(key))
+            {
+                return loadedLanguage->translations.at(key);
+            }
+            throw LanguageNotReadableException();
+            return key;
+        }
+        else
+        {
+            throw LanguageNotReadableException();
+        }
+    }
+
+    const char* LanguageNotReadableException::what() const throw()
+    {
+        if (languageName == "")
+        {
+            return "Attempted to access or failed to load unloaded language resource";
+        }
+
+        return languageName.c_str();
     }
 }

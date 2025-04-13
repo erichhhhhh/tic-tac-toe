@@ -1,6 +1,7 @@
 ﻿#include "UserInteraction.h"
 
 #include <iostream>
+#include <format>
 #include <sstream>
 #include <vector>
 #include <string>
@@ -24,18 +25,9 @@ void mainMenu(bool playDisabled, Config::Config& config)
 				playDisabled = false;
 			}
 		}
-		std::cout << "Erik Gerk pr\204sentiert:" << std::endl;
+		std::cout << Config::Language::getTranslation("title.presentation") << std::endl; // Erik Gerk pr\204sentiert:
 
-		std::string tictactoe_title =
-			"   _____  _      _____           _____             \n"
-			"  |_   _|(_)    |_   _|         |_   _|            \n"
-			"    | |   _   ___ | |  __ _   ___ | |  ___    ___  \n"
-			"    | |  | | / __|| | / _` | / __|| | / _ \\  / _ \\ \n"
-			"    | |  | || (__ | || (_| || (__ | || (_) ||  __/ \n"
-			"    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n"
-			"                                                   ";
-
-		std::cout << rang::fg::green << rang::style::blink << tictactoe_title << rang::style::reset << std::endl;
+		std::cout << rang::fg::green << rang::style::blink << Config::Language::getTranslation("title.title_art") << rang::style::reset << std::endl;
 
 
 		rang::style style = rang::style::reset;
@@ -47,18 +39,17 @@ void mainMenu(bool playDisabled, Config::Config& config)
 
 		std::cout
 			<< style
-			<< "1)    Spielen" << std::endl
-			<< "2)    Onlinespiel" << std::endl
+			<< Config::Language::getTranslation("title.play") << std::endl // 1) Spielen
+			<< Config::Language::getTranslation("title.multiplayer") << std::endl // 2) Onlinespiel
 			<< rang::style::reset
-			<< "3)    Einstellungen" << std::endl
-			<< "0)    Beenden" << std::endl;
+			<< Config::Language::getTranslation("title.settings") << std::endl // 3) Einstellungen
+			<< Config::Language::getTranslation("title.exit") << std::endl; // 0) Beenden
 
 		if (playDisabled)
 		{
 			std::cout
 				<< rang::style::bold
-				<< "\nSpiel und Onlinespiel sind aufgrund fehlender Einstellungen deaktiviert."
-				"\nBitte hinterlege deine Pr\204ferenzen in den Einstellungen."
+				<< Config::Language::getTranslation("title.play_disabled") //"\nSpiel und Onlinespiel sind aufgrund fehlender Einstellungen deaktiviert.\nBitte hinterlege deine Pr\204ferenzen in den Einstellungen."
 				<< rang::style::reset
 				<< std::endl;
 		}
@@ -80,13 +71,9 @@ void mainMenu(bool playDisabled, Config::Config& config)
 					{
 						if (config.areSettingsBeforeGameShown())
 						{
-							try
-							{
 								Config::Config tmpConfig = config;
 								settings(tmpConfig, true);
 								launchGame(tmpConfig);
-							}
-							catch(std::exception e){}
 						}
 						else
 						{
@@ -182,59 +169,71 @@ void settings(Config::Config& config, const bool& areTempSettings)
 {
 	clear();
 
-	std::string title = areTempSettings ? "Spielparameter" : "Standardeinstellungen";
+	std::string title = areTempSettings ? Config::Language::getTranslation("settings.temp_settings") : Config::Language::getTranslation("settings.settings"); // Spielparameter ; Standardeinstellungen
 	while (true)
 	{
+		std::string smbl = ((config.getPreferedSymbol() == Symbol::X) ? Config::Language::getTranslation("symbol.X") : Config::Language::getTranslation("symbol.O"));
+		std::string smbl2 = ((config.getPreferedSymbol() != Symbol::X) ? Config::Language::getTranslation("symbol.X") : Config::Language::getTranslation("symbol.O"));
+		std::string symbol = std::vformat(Config::Language::getTranslation("settings.symbol"),
+			std::make_format_args(smbl, smbl2));
+
 		std::cout
 			<< title
-			<< ":\n"
-			<< "\t1) Symbol\t\t(Spieler 1): [" << ((config.getPreferedSymbol() == Symbol::X) ? "X" : "O") << "]"
-			<< "\n\t\t\t\t(Spieler 2): [" << ((config.getPreferedSymbol() != Symbol::X) ? "X" : "O") << "]\n"
+			<< symbol
 			<< std::endl;
 
+		std::string plAmount = ((config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_ONLY) ? Config::Language::getTranslation("settings.player_amount.computer_only") : (config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_PLAYER) ? Config::Language::getTranslation("settings.player_amount.computer_and_player") : Config::Language::getTranslation("settings.player_amount.player_only"));
+		std::string playerAmount = std::vformat(Config::Language::getTranslation("settings.player_amount"), std::make_format_args(plAmount));
 		std::cout
-			<< "\t2) Spielerkonfiguration\t[" << ((config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_ONLY) 
-				? "Nur Computer" : (config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_PLAYER) 
-				? "Computer und Spieler" : "Nur Spieler") << "]\n"
+			<< playerAmount
 			<< std::endl;
 
+		std::string isSymbolEnfrcd = (config.isSymbolEnforced() ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
+		std::string isSymbolEnforced = std::vformat(Config::Language::getTranslation("settings.is_symbol_enforced"),
+			std::make_format_args(isSymbolEnfrcd));
 		std::cout
-			<< "\t3) Symbol erzwingen\t[" << (config.isSymbolEnforced() ? "Ja" : "Nein") 
-			<< "] (Symbol wird im Onlinespiel entgegen Darstellung des Gegners erzwungen)\n"
+			<< isSymbolEnforced
 			<< std::endl;
 
+		std::string fstPlayer = ((config.getFirstPlayer() == FieldType::PLAYER1) ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
+		std::string firstPlayer = std::vformat(Config::Language::getTranslation("settings.first_player"),
+			std::make_format_args(fstPlayer));
 		std::cout
-			<< "\t4) Klassische\n\t   Spielerreihenfolge\t[" << ((config.getFirstPlayer() == FieldType::PLAYER1) ? "Ja" : "Nein") << "]"
-			<< " (Wenn diese Option aktiviert ist, beginnt Spieler 1 das Spiel,\n\t\t\t\t\tansonsten Spieler 2)\n"
+			<< firstPlayer
 			<< std::endl;
 
 		if (!areTempSettings)
 		{
+			std::string sttngsBfrGm = (config.areSettingsBeforeGameShown() ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
+			std::string settingsBeforeGame = std::vformat(Config::Language::getTranslation("settings.settings_before_game"),
+				std::make_format_args(sttngsBfrGm));
 			std::cout
-				<< "\t5) Parameter vor\n\t   Spielbeginn\t\t[" << (config.areSettingsBeforeGameShown() ? "Ja" : "Nein") 
-				<< "] (Wenn aktiviert, werden vor jedem Spiel die Einstellungen gezeigt)\n"
+				<< settingsBeforeGame
 				<< std::endl;
 		}
 
+		std::string dffclty = ((config.getDifficulty() == Config::Difficulty::EASY)
+			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Config::Difficulty::MIDDLE)
+			? Config::Language::getTranslation("settings.difficulty.medium") : Config::Language::getTranslation("settings.difficulty.hard"));
+		std::string difficulty = std::vformat(Config::Language::getTranslation("settings.difficulty"),
+			std::make_format_args(dffclty));
 		std::cout
-			<< "\t6) Schwierigkeitsgrad\t[" << ((config.getDifficulty() == Config::Difficulty::EASY) 
-				? "Einfach" : (config.getDifficulty() == Config::Difficulty::MIDDLE) 
-				? "Mittel" : "Schwer") << "]\n"
+			<< difficulty
 			<< std::endl;
 
 		if (areTempSettings)
 		{
 			std::cout
-				<< "\t9) Spiel abbrechen\n"
+				<< Config::Language::getTranslation("settings.abort_game")
 				<< std::endl;
 			std::cout
-				<< "\t0) Zum Spiel"
+				<< Config::Language::getTranslation("settings.start_game")
 				<< std::endl;
 		}
 		else
 		{
 			std::cout
-				<< "\t0) Einstellungen speichern"
+				<< Config::Language::getTranslation("settings.save_settings")
 				<< std::endl;
 		}
 
@@ -276,7 +275,7 @@ void settings(Config::Config& config, const bool& areTempSettings)
 		case 9:
 			if (areTempSettings)
 			{
-				throw std::exception("Scheiß Wichser hat den Schwanz eingezogen und will nicht spielen");
+				throw std::exception("Shit happens");
 				break;
 			}
 			else
@@ -367,6 +366,15 @@ std::string table(Field& field)
 	std::cout.rdbuf(backup);
 
 	return ostream.str();
+}
+
+void printError(std::string exception)
+{
+	clear();
+	std::cout << rang::fg::red << rang::style::bold << tictactoe_title << rang::style::reset << std::endl;
+	std::cout << "There was an exception whilst running the program" << std::endl << std::endl;
+	std::cout << rang::style::bold << exception << rang::style::reset << std::endl;
+	pause();
 }
 
 void pause()

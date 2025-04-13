@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <ShlObj.h>
 
 #include "Player.h"
@@ -82,17 +83,17 @@ namespace Config
 		bool serialize() override;
 		bool deserialize() override;
 
-		enum Symbol getPreferedSymbol() const{ return preferedSymbol; }
-		void setPreferedSymbol(const enum Symbol& symbol) { preferedSymbol = symbol; }
+		enum class Symbol getPreferedSymbol() const{ return preferedSymbol; }
+		void setPreferedSymbol(const enum class Symbol& symbol) { preferedSymbol = symbol; }
 
-		enum PlayerAmount getPlayerAmount() const { return playerAmount; }
-		void setPlayerAmount(const enum PlayerAmount& amount) { playerAmount = amount; }
+		enum class PlayerAmount getPlayerAmount() const { return playerAmount; }
+		void setPlayerAmount(const enum class PlayerAmount& amount) { playerAmount = amount; }
 
 		bool isSymbolEnforced() const { return enforceSymbol; }
 		void setIfSymbolEnforced(const bool& param) { enforceSymbol = param; }
 
-		enum FieldType getFirstPlayer() const { return firstPlayer; }
-		void setFirstPlayer(const enum FieldType& symbol)
+		enum class FieldType getFirstPlayer() const { return firstPlayer; }
+		void setFirstPlayer(const enum class FieldType& symbol)
 		{ 
 			if(symbol != FieldType::EMPTY)
 				firstPlayer = symbol; 
@@ -101,8 +102,11 @@ namespace Config
 		bool areSettingsBeforeGameShown() const { return showSettingsBeforeGame; }
 		void setIfSettingsAreShownBeforeGame(const bool& param) { showSettingsBeforeGame = param; }
 
-		enum Difficulty getDifficulty() const { return difficulty; }
+		enum class Difficulty getDifficulty() const { return difficulty; }
 		void setDifficulty(const enum class Difficulty& diff) { difficulty = diff; }
+
+		std::string getLanguage() const { return language; }
+		bool setLanguage(std::string language);
 
 		bool operator==(const Config& config) const;
 
@@ -116,6 +120,7 @@ namespace Config
 		enum FieldType firstPlayer = FieldType::PLAYER1;
 		bool showSettingsBeforeGame = true;
 		enum class Difficulty difficulty = Difficulty::HARD;
+		std::string language = "en-US";
 
 	};
 
@@ -126,23 +131,34 @@ namespace Config
 
 	class Language : public AbstractConfig
 	{
-
-	public:
-		Language(std::string name)
-		{
-			type = ConfigFiles::LanguageFile;
-			path = paths.at(type);
-			path.filename = name;
-			version = 1;
-		}
-
-		bool deserialize() override;
-
 	private:
 		std::string lang;
 		std::string name;
 		std::string region;
+		bool functional = false;
 
 		std::map<std::string, std::string> translations;
+
+		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
+
+		bool deserialize() override;
+		bool serialize() override { return false; }
+
+		Language(std::string name);
+
+	public:
+
+		static std::vector<Language> listLanguages();
+		static bool loadLanguage(std::string name);
+		static std::string getTranslation(std::string key);
+	};
+
+	class LanguageNotReadableException : public std::exception
+	{
+	private:
+		std::string languageName;
+	public:
+		LanguageNotReadableException(std::string langName = "") { languageName = langName; }
+		const char* what() const throw();
 	};
 }

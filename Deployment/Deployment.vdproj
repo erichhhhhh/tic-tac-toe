@@ -21,31 +21,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_82E4492CDF967C2BCA3C6C1F11C71CDC"
-        "OwnerKey" = "8:_2A2B638A21CD46C88600604CFE6055FB"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_9A71DA6034B08949B060C03D0470C65D"
-        "OwnerKey" = "8:_2A2B638A21CD46C88600604CFE6055FB"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_A74D3883C80C33AA311B8F15E96CED10"
-        "OwnerKey" = "8:_2A2B638A21CD46C88600604CFE6055FB"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CDA729F8B8D54D7090C79E2376E2A666"
+        "MsmKey" = "8:_36D84D3FEEB84FB5818E417A1881C3C5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_D1B3F25CFF014EC19ECD3326EF94EFBE"
+        "MsmKey" = "8:_CDA729F8B8D54D7090C79E2376E2A666"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -67,6 +49,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -83,6 +81,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -104,70 +118,10 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_82E4492CDF967C2BCA3C6C1F11C71CDC"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_36D84D3FEEB84FB5818E417A1881C3C5"
             {
-            "SourcePath" = "8:MSVCP140.dll"
-            "TargetName" = "8:MSVCP140.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9A71DA6034B08949B060C03D0470C65D"
-            {
-            "SourcePath" = "8:VCRUNTIME140_1.dll"
-            "TargetName" = "8:VCRUNTIME140_1.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A74D3883C80C33AA311B8F15E96CED10"
-            {
-            "SourcePath" = "8:VCRUNTIME140.dll"
-            "TargetName" = "8:VCRUNTIME140.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CDA729F8B8D54D7090C79E2376E2A666"
-            {
-            "SourcePath" = "8:..\\x64\\Release\\jsoncpp.dll"
-            "TargetName" = "8:jsoncpp.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\Downloads\\tic-tac-toe.ico"
+            "TargetName" = "8:tic-tac-toe.ico"
             "Tag" = "8:"
             "Folder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
             "Condition" = "8:"
@@ -184,10 +138,10 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D1B3F25CFF014EC19ECD3326EF94EFBE"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CDA729F8B8D54D7090C79E2376E2A666"
             {
-            "SourcePath" = "8:C:\\Users\\egerk\\Downloads\\tic-tac-toe.ico"
-            "TargetName" = "8:tic-tac-toe.ico"
+            "SourcePath" = "8:..\\x64\\Release\\jsoncpp.dll"
+            "TargetName" = "8:jsoncpp.dll"
             "Tag" = "8:"
             "Folder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
             "Condition" = "8:"
@@ -242,6 +196,17 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_B22160445F774620B54FEB46D37D8995"
+                    {
+                    "Name" = "8:language"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_CA5ADFD695D44324A199EAB984E2B0F2"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_E41926AA14184BD7963EECCFCFC8C2F4"
@@ -272,7 +237,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TicTacToe"
         "ProductCode" = "8:{2EF05ACD-AC23-4E5B-A30E-3E827E347CC5}"
-        "PackageCode" = "8:{98CBD92E-3F36-4344-BC67-8E1E2DD7EBB4}"
+        "PackageCode" = "8:{C4657D3A-3C2C-4D1B-9B0B-241EB6CC7B43}"
         "UpgradeCode" = "8:{AC3BD5EC-A023-42A4-84C7-97EBEB4F6E8A}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -403,7 +368,7 @@
             "Target" = "8:_2A2B638A21CD46C88600604CFE6055FB"
             "Folder" = "8:_E41926AA14184BD7963EECCFCFC8C2F4"
             "WorkingFolder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
-            "Icon" = "8:_D1B3F25CFF014EC19ECD3326EF94EFBE"
+            "Icon" = "8:_36D84D3FEEB84FB5818E417A1881C3C5"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_509B21F0A91D4244BB4972187188D7A3"
@@ -417,7 +382,7 @@
             "Target" = "8:_2A2B638A21CD46C88600604CFE6055FB"
             "Folder" = "8:_9779CE8996AD414AA94414C26C8F8647"
             "WorkingFolder" = "8:_DF9FEF421C2741A78CB6B0328B33B5FF"
-            "Icon" = "8:_D1B3F25CFF014EC19ECD3326EF94EFBE"
+            "Icon" = "8:_36D84D3FEEB84FB5818E417A1881C3C5"
             "Feature" = "8:"
             }
         }
@@ -433,7 +398,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_647D4A75D634419A9D36973D03D174E9"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Progress"
+                    "DisplayName" = "8:Status"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdProgressDlg.wid"
@@ -477,7 +442,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_9209F6F58DAB44B38FAAA0F644AB0169"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Finished"
+                    "DisplayName" = "8:Fertig"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFinishedDlg.wid"
@@ -514,7 +479,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_90463908F6524915B00FB33D2133DD95"
                     {
                     "Sequence" = "3:200"
-                    "DisplayName" = "8:Installation Folder"
+                    "DisplayName" = "8:Installationsordner"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFolderDlg.wid"
@@ -536,7 +501,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_B7C8DD5B7D574285A4DCDBFBA215C6D0"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Welcome"
+                    "DisplayName" = "8:Willkommen"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminWelcomeDlg.wid"
@@ -584,7 +549,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_EC4408060EDC44F9A056C79E1EBD9702"
                     {
                     "Sequence" = "3:300"
-                    "DisplayName" = "8:Confirm Installation"
+                    "DisplayName" = "8:Installation bestätigen"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminConfirmDlg.wid"
@@ -615,7 +580,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_0559B8C7C6684D7BADA1B1BE718BB8BC"
                     {
                     "Sequence" = "3:200"
-                    "DisplayName" = "8:Installation Folder"
+                    "DisplayName" = "8:Installationsordner"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFolderDlg.wid"
@@ -650,7 +615,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_3350CA633BD24F3C9F79A30BBE094359"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Welcome"
+                    "DisplayName" = "8:Willkommen"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdWelcomeDlg.wid"
@@ -698,7 +663,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_4EABA0AC0CC04F86AC4B094C7EF0E4EA"
                     {
                     "Sequence" = "3:300"
-                    "DisplayName" = "8:Confirm Installation"
+                    "DisplayName" = "8:Installation bestätigen"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdConfirmDlg.wid"
@@ -729,7 +694,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_DDA3FC2546994F088A70A1648974FD86"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Finished"
+                    "DisplayName" = "8:Fertig"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFinishedDlg.wid"
@@ -779,7 +744,7 @@
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_1C66B1B1CBAD4716B128D4EEC3711A03"
                     {
                     "Sequence" = "3:100"
-                    "DisplayName" = "8:Progress"
+                    "DisplayName" = "8:Status"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminProgressDlg.wid"

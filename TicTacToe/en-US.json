@@ -1,0 +1,35 @@
+{
+  "lang": "en-US",
+  "name": "English",
+  "region": "United States",
+  "translations": [
+    [ "title.presentation", "Erik Gerk presents:" ],
+    [ "title.title_art", "   _____  _      _____           _____             \n  |_   _|(_)    |_   _|         |_   _|            \n    | |   _   ___ | |  __ _   ___ | |  ___    ___  \n    | |  | | / __|| | / _` | / __|| | / _ \\  / _ \\ \n    | |  | || (__ | || (_| || (__ | || (_) ||  __/ \n    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n                                                   " ],
+    [ "title.play", "1) Play" ],
+    [ "title.multiplayer", "2) Multiplayer" ],
+    [ "title.settings", "3) Settings" ],
+    [ "title.exit", "0) Exit" ],
+    [ "symbol.X", "X" ],
+    [ "symbol.O", "O" ],
+    [ "settings.yes", "Yes" ],
+    [ "settings.no", "No"],
+    [ "settings.settings", "Settings:" ],
+    [ "settings.temp_settings", "Settings (per Game):" ],
+    [ "settings.symbol", "\n\t1) Symbol\t\t(Player 1): [{}]\n\t\t\t\t(Player 2): [{}]\n" ],
+    [ "settings.player_amount", "\t2) Player configuration\t[{}]\n" ],
+    [ "settings.player_amount.computer_only", "Computer only" ],
+    [ "settings.player_amount.computer_and_player", "Computer and Player" ],
+    [ "settings.player_amount.player_only", "Player only"],
+    [ "settings.is_symbol_enforced", "\t3) Enforce symbol\t[{}] (Symbol will not be synchronized in Multipayer)\n" ],
+    [ "settings.first_player", "\t4) Order of\n\t   game\t[{}] (If this option is enabled, Player 1 starts,\n\t\t\t\t\totherwise Player 2)\n" ],
+    [ "settings.settings_before_game", "\t5) Settings before\n\t   start of game\t\t[{}] (If activated, the settings will be shown before every game)\n" ],
+    [ "settings.difficulty", "\t6) Difficulty\t[{}]\n" ],
+    [ "settings.difficulty.easy", "Easy" ],
+    [ "settings.difficulty.medium", "Medium" ],
+    [ "settings.difficulty.hard", "Hard" ],
+    [ "settings.abort_game", "\t9) Cancel game\n" ],
+    [ "settings.start_game", "\t0) Start game" ],
+    [ "settings.save_settings", "\t0) Save settings" ]
+
+  ]
+}
