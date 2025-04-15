@@ -144,8 +144,8 @@ namespace Config
 	class Language : public AbstractConfig
 	{
 	private:
-		std::string lang;
-		std::string name;
+		std::string filename;
+		std::string displayName;
 		std::string region;
 		bool functional = false;
 

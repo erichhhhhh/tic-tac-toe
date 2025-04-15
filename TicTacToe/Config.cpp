@@ -206,7 +206,7 @@ namespace Config
         type = ConfigFiles::LanguageFile;
         path = Path(ConfigFiles::LanguageFile, name);
         path.filename = name;
-        version = 1;
+        version = 2;
         bool functional = deserialize();
 
     }
@@ -233,15 +233,22 @@ namespace Config
         Json::Value object;
         Json::Reader().parse(jsonString, object);
 
-        lang = object["lang"].asString();
-        name = object["name"].asString();
+        if (object["version"].asInt() == 1 || object["version"].isNull())
+        {
+            return false;
+        }
+
+        filename = object["filename"].asString();
+        displayName = object["displayName"].asString();
         region = object["region"].asString();
+
         const Json::Value& translationsJSON = object["translations"];
         for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
         {
             const Json::Value& translation = translationsJSON[i];
             translations.insert(std::pair<std::string, std::string>(translation[0].asString(), translation[1].asString()));
         }
+
         return true;
     }
 

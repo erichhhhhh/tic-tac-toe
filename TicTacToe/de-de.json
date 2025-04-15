@@ -2,6 +2,7 @@
   "lang": "de-DE",
   "name": "Deutsch",
   "region": "Deutschland",
+  "version": 2,
   "translations": [
     [ "title.presentation", "Erik Gerk pr\204sentiert:" ],
     [ "title.title_art", "   _____  _      _____           _____             \n  |_   _|(_)    |_   _|         |_   _|            \n    | |   _   ___ | |  __ _   ___ | |  ___    ___  \n    | |  | | / __|| | / _` | / __|| | / _ \\  / _ \\ \n    | |  | || (__ | || (_| || (__ | || (_) ||  __/ \n    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n                                                   " ],
