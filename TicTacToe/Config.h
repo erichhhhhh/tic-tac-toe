@@ -143,7 +143,7 @@ namespace Config
 		std::map<std::string, std::string> translations;
 
 		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
-		static std::vector<Language> languageList;
+		static inline std::vector<Language> languageList;
 
 		bool deserialize() override;
 		bool serialize() override { return false; }
