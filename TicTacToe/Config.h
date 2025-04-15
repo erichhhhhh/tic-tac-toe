@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <exception>
 #include <ShlObj.h>
 
 #include "Player.h"
@@ -46,6 +47,14 @@ namespace Config
 		static std::string getDir(int id);
 		static std::map <enum ConfigFiles, Path> unspecified_paths;
 		static std::map <ConfigFiles, std::pair<Path, std::string>> specified_paths;
+	};
+
+	class PathNotRetrievableException : std::exception
+	{
+		std::string path;
+	public:
+		PathNotRetrievableException(std::string path) : path(path) {};
+		const char* what() const throw();
 	};
 
 	class AbstractConfig

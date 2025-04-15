@@ -305,4 +305,13 @@ namespace Config
 
         return languageName.c_str();
     }
+    const char* PathNotRetrievableException::what() const throw()
+    {
+        if (path == "")
+        {
+            return "Unknown path could not be retrieved";
+        }
+
+        return path.c_str();
+    }
 }
