@@ -12,36 +12,71 @@
 namespace Config
 {
 
-    AbstractConfig::Path::Path(std::string directory, std::string filename)
+    Path::Path(std::string directory, std::string filename)
     {
         this->directory = directory;
         this->filename = filename;
     }
 
-    std::string AbstractConfig::Path::getPath()
+    Path::Path(ConfigFiles type, std::string fileSpecifier)
+    {
+        if (fileSpecifier == "")
+        {
+            Path requestedPath = unspecified_paths.at(type);
+            this->directory = requestedPath.directory;
+            this->filename = requestedPath.filename;
+        }
+        else
+        {
+            std::pair<Path, std::string> path_and_extension = specified_paths.at(type);
+            this->directory = path_and_extension.first.directory;
+            this->filename = fileSpecifier + path_and_extension.second;
+        }
+    }
+
+    std::string Path::getPath()
     {
         return directory + filename;
     }
 
 #ifdef _WIN32
-    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::paths =
+    std::map<enum ConfigFiles, Path> Path::unspecified_paths =
     {
-        std::pair <enum ConfigFiles, AbstractConfig::Path> (ConfigFiles::GeneralConfig, AbstractConfig::Path(getDir(CSIDL_APPDATA), "config.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path(getDir(CSIDL_APPDATA), "serverlist.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
+        std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
+        std::pair <enum ConfigFiles, Path>(ConfigFiles::GeneralConfig, Path(getDir(CSIDL_APPDATA), "config.json")),
+        std::pair <enum ConfigFiles, Path> (ConfigFiles::Serverlist, Path(getDir(CSIDL_APPDATA), "serverlist.json")),
+        std::pair<ConfigFiles, Path>(ConfigFiles::LanguageFile, Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
+    };
+
+    std::map<ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
+    {
+        std::pair<ConfigFiles, std::pair<Path, std::string>>
+        (
+            ConfigFiles::LanguageFile, 
+            std::pair<Path, std::string>(Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""), ".json")
+        )
     };
 
 #else
-    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::paths =
+    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::Path::unspecified_paths =
     {
         std::pair <enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::GeneralConfig, AbstractConfig::Path("", "/config.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path("", "/serverlist.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::LanguageFile, AbstractConfig::Path("" + "/language/", ""))
+        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path("", "/serverlist.json"))
     };
+
+    std::map<ConfigFiles, std::pair<AbstractConfig::Path, std::string>> AbstractConfig::Path::specified_paths =
+    {
+        std::pair<ConfigFiles, std::pair<AbstractConfig::Path, std::string>>
+        (
+            ConfigFiles::LanguageFile,
+            std::pair<AbstractConfig::Path, std::string>(AbstractConfig::Path("" + "language\\", ""), ".json")
+        )
+    };
+
 #endif
 
 #ifdef _WIN32
-    std::string AbstractConfig::getDir(int id)
+    std::string Path::getDir(int id)
     {
         LPWSTR strPath = new WCHAR[2048];
         SHGetSpecialFolderPath(0, strPath, id, FALSE);
@@ -169,7 +204,7 @@ namespace Config
     Language::Language(std::string name)
     {
         type = ConfigFiles::LanguageFile;
-        path = paths.at(type);
+        path = Path(ConfigFiles::LanguageFile, name);
         path.filename = name;
         version = 1;
         bool functional = deserialize();
@@ -210,24 +245,31 @@ namespace Config
         return true;
     }
 
-    std::vector<Language> Language::listLanguages()
+    void Language::loadLanguageList()
     {
         try
         {
-            std::vector<Language> langs;
-            for (const auto& entry : std::filesystem::directory_iterator(paths.at(ConfigFiles::LanguageFile).getPath()))
+            languageList.clear();
+           for (const auto& entry : std::filesystem::directory_iterator(Path(ConfigFiles::LanguageFile).getPath()))
             {
                 Language lang = Language(entry.path().stem().string());
                 lang.deserialize();
-                langs.push_back(lang);
+                languageList.push_back(lang);
             }
-            return langs;
         }
         catch (std::exception e)
         {
             throw LanguageNotReadableException();
-            return {};
         }
+    }
+
+    std::vector<Language> Language::getLanguageList(const bool reload)
+    {
+        if (reload)
+        {
+            Language::getLanguageList();
+        }
+        return languageList;
     }
 
     bool Language::loadLanguage(std::string name)
