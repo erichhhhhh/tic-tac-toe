@@ -1,6 +1,8 @@
 #include <vector>
+#include <format>
 #include "FieldAnalyser.h"
 #include "Player.h"
+#include "Config.h"
 
 enum WinningType detectWinner(Field& field)
 {
@@ -62,15 +64,13 @@ std::string printWinningMessage(enum WinningType winner)
     }
     else if (winner == WinningType::DRAW)
     {
-        return "Das Spiel ging unentschieden aus";
+        return Config::Language::getTranslation("game.draw");
     }
-    else if (winner == WinningType::PLAYER1)
+    else if (winner == WinningType::PLAYER1 || winner == WinningType::PLAYER2)
     {
-        return Player::getPlayer(FieldType::PLAYER1).getSymbolString() + " hat gewonnen";
-    }
-    else if (winner == WinningType::PLAYER2)
-    {
-        return Player::getPlayer(FieldType::PLAYER2).getSymbolString() + " hat gewonnen";
+        Player player = winner == WinningType::PLAYER1 ? Player::getPlayer(FieldType::PLAYER1) : Player::getPlayer(FieldType::PLAYER2);
+        std::string symbol = Config::Language::getTranslation(player.getSymbolString());
+        return std::vformat(Config::Language::getTranslation("game.win"), std::make_format_args(symbol));
     }
     else
     {

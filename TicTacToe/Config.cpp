@@ -3,9 +3,10 @@
 #include <filesystem>
 #include <fstream>
 #include <tuple>
-
+#include <ShlObj.h>
 #include <json/json.h>
-
+#include <ada/idna/to_ascii.h>
+#include <ada/idna/to_unicode.h>
 
 #define VERSION 2
 
@@ -106,7 +107,9 @@ namespace Config
         object["firstPlayer"] = static_cast<int>(firstPlayer);
         object["showSettingsBeforeGame"] = showSettingsBeforeGame;
         object["difficulty"] = static_cast<int>(difficulty);
+        object["language"] = language;
         object["version"] = version;
+
 
         std::filesystem::path path(this->path.directory);
         if (!std::filesystem::exists(path))
@@ -155,6 +158,15 @@ namespace Config
             {
                 object["difficulty"] = static_cast<int>(Difficulty::HARD);
             }
+        }
+
+        if (object["language"].isNull())
+        {
+            language = "en-US";
+        }
+        else
+        {
+            language = object["language"].asString();
         }
 
         preferedSymbol = static_cast<enum Symbol>(object["preferedSymbol"].asInt());
@@ -211,6 +223,21 @@ namespace Config
 
     }
 
+    std::string Language::maskPhrases(std::string phrase)
+    {
+        for (int i = 0; i < static_cast<int>(phrase.size()) - 1; i++)
+        {
+            std::string codepoint = phrase.substr(i, 2);
+
+            if (maskedCharacter.find(codepoint) != maskedCharacter.end())
+            {
+                phrase = phrase.substr(0, i) + maskedCharacter.at(codepoint) + phrase.substr(i + 2);
+            }
+        }
+        
+        return phrase;
+    }
+
     bool Language::deserialize()
     {
         std::ifstream input(path.getPath() + ".json");
@@ -238,15 +265,22 @@ namespace Config
             return false;
         }
 
-        filename = object["filename"].asString();
-        displayName = object["displayName"].asString();
-        region = object["region"].asString();
+        filename = maskPhrases(object["filename"].asString());
+        displayName = maskPhrases(object["displayName"].asString());
+        region = maskPhrases(object["region"].asString());
+
+        const Json::Value& maskedCharsJSON = object["maskedCharacters"];
+        for (Json::Value::ArrayIndex i = 0; i < maskedCharsJSON.size(); i++)
+        {
+            const Json::Value& maskedChar = maskedCharsJSON[i];
+            maskedCharacter.insert(std::pair<std::string, char> (maskedChar[0].asString(), static_cast<char>((maskedChar[1].asInt()))));
+        }
 
         const Json::Value& translationsJSON = object["translations"];
         for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
         {
             const Json::Value& translation = translationsJSON[i];
-            translations.insert(std::pair<std::string, std::string>(translation[0].asString(), translation[1].asString()));
+            translations.insert(std::pair<std::string, std::string>(translation[0].asString(), maskPhrases(translation[1].asString())));
         }
 
         return true;
@@ -272,9 +306,9 @@ namespace Config
 
     std::vector<Language> Language::getLanguageList(const bool reload)
     {
-        if (reload)
+        if (reload || languageList.empty())
         {
-            Language::getLanguageList();
+            Language::loadLanguageList();
         }
         return languageList;
     }
@@ -294,13 +328,31 @@ namespace Config
             {
                 return loadedLanguage->translations.at(key);
             }
+#ifndef _DEBUG
             throw LanguageNotReadableException();
+#else
             return key;
+#endif
         }
         else
         {
             throw LanguageNotReadableException();
         }
+    }
+
+    std::string Language::getFilename()
+    {
+        return filename;
+    }
+
+    std::string Language::getDisplayName()
+    {
+        return displayName;
+    }
+
+    std::string Language::getRegion()
+    {
+        return region;
     }
 
     const char* LanguageNotReadableException::what() const throw()

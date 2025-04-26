@@ -1,17 +1,75 @@
 ﻿#include "UserInteraction.h"
 
+#include <functional>
 #include <iostream>
-#include <format>
-#include <sstream>
 #include <vector>
 #include <string>
+#include <format>
+#include <sstream>
 
 #include <rang.hpp>
 
-#include "Field.h"
-#include "Player.h"
 #include "FieldAnalyser.h"
-#include "Config.h"
+
+
+std::string buildOutput(std::string str, auto&&... args)
+{
+	return std::vformat(str, std::make_format_args(args...));
+}
+
+void languageSettings(Config::Config& config)
+{
+	std::vector<Config::Language> langlist = Config::Language::getLanguageList();
+
+#ifdef _ADHSUID
+	for (size_t i = 0; i < 3; i++)
+	{
+		langlist.insert(langlist.end(), langlist.begin(), langlist.end());
+	}
+#endif
+	while (true)
+	{
+		for (int i = 0; i < langlist.size(); i += 10)
+		{
+			clear();
+			std::string titleTranslation = Config::Language::getTranslation("settings.language.title");
+			int page = (i / 10) + 1;
+			int allPages = ((langlist.size() / 10) + ((langlist.size() % 10 > 0) ? 1 : 0));
+			std::string outputTitle = std::vformat(titleTranslation, std::make_format_args(page, allPages));
+			std::cout << outputTitle << "\n" << std::endl;
+			for (int j = 0; j < 10 && (langlist.size() - i) > j; j++)
+			{
+				int target = i * 10 + j;
+				std::string targetString = std::to_string(target+1);
+				std::string displayName = langlist.at(target).getDisplayName();
+				std::string region = langlist.at(target).getRegion();
+				std::string output = buildOutput(Config::Language::getTranslation("settings.language.entry"), targetString, displayName, region);
+				if (langlist.at(target).getFilename() == config.getLanguage())
+				{
+					std::cout << rang::style::bold << output << rang::style::reset << std::endl;
+				}
+				else
+				{
+					std::cout << output << std::endl;
+				}
+			}
+			std::cout << Config::Language::getTranslation("settings.language.exit") << std::endl;
+			if (allPages > 1)
+				std::cout << Config::Language::getTranslation("settings.language.scroll") << std::endl;
+			int input = numericInput<int>();
+			if (input == 0)
+			{
+				return;
+			}
+			try
+			{
+				config.setLanguage(langlist.at(input-1 + i * 10).getFilename());
+				return;
+			}
+			catch(std::exception e) {}
+		}
+	}
+}
 
 void mainMenu(bool playDisabled, Config::Config& config)
 {
@@ -62,7 +120,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 			case 2:
 				if (playDisabled)
 				{
-					std::cout << rang::fgB::red << "Entschludigung\nDu kannst nicht spielen" << rang::style::reset << std::endl;
+					std::cout << rang::fgB::red << Config::Language::getTranslation("title.play_disabled.error") << rang::style::reset << std::endl;
 					pause();
 				}
 				else
@@ -72,8 +130,15 @@ void mainMenu(bool playDisabled, Config::Config& config)
 						if (config.areSettingsBeforeGameShown())
 						{
 								Config::Config tmpConfig = config;
-								settings(tmpConfig, true);
-								launchGame(tmpConfig);
+								try
+								{
+									settings(tmpConfig, true);
+									launchGame(tmpConfig);
+								}
+								catch (std::exception e)
+								{
+									break;
+								}
 						}
 						else
 						{
@@ -82,7 +147,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 					}
 					else if (ipt == 2)
 					{
-						std::cout << "Sorry! Noch nicht implementiert" << std::endl;
+						std::cout << "Not implemented" << std::endl;
 						pause();
 						//Online game init code here
 					}
@@ -137,17 +202,20 @@ void launchGame(Config::Config& config)
 		for (int i = 1; i < 3; i++)
 		{
 			clear();
-			std::cout << "Spieler " << Player::getPlayer((enum FieldType)i).getSymbolString() << ":" << std::endl;
+			Player player = Player::getPlayer(static_cast<FieldType>(i));
+			std::string playerStr = Config::Language::getTranslation(player.getSymbolString());
+			std::string title = std::vformat(Config::Language::getTranslation("game.turn_title"), std::make_format_args(playerStr));
+			std::cout << title << std::endl;
 			std::cout << table(field) << std::endl;
 
 			if (Player::getPlayer(static_cast<FieldType>(i)).isComputer())
 			{
-				std::cout << "Der Computer muss noch \201berlegen" << std::endl;
+				std::cout << Config::Language::getTranslation("game.computers_turn") << std::endl;
 				pause();
 			}
 			else
 			{
-				std::cout << "Welches Feld?" << std::endl;
+				std::cout << Config::Language::getTranslation("game.field_selection") << std::endl;
 			}
 
 			Player::getPlayer((enum FieldType)i).play(field);
@@ -221,6 +289,11 @@ void settings(Config::Config& config, const bool& areTempSettings)
 			<< difficulty
 			<< std::endl;
 
+		if (!areTempSettings)
+		{
+			std::cout << Config::Language::getTranslation("settings.language") << std::endl;
+		}
+
 		if (areTempSettings)
 		{
 			std::cout
@@ -272,10 +345,15 @@ void settings(Config::Config& config, const bool& areTempSettings)
 				? Config::Difficulty::HARD : (config.getDifficulty() == Config::Difficulty::HARD) 
 				? Config::Difficulty::EASY : Config::Difficulty::HARD);
 			break;
+		case 7:
+			if(!areTempSettings)
+				languageSettings(config);
+			title = Config::Language::getTranslation("settings.settings");
+			break;
 		case 9:
 			if (areTempSettings)
 			{
-				throw std::exception("Shit happens");
+				throw std::exception("Start aborted");
 				break;
 			}
 			else
@@ -309,11 +387,11 @@ std::string table(Field& field)
 		}
 		else if (field.getPlayAt(i) == FieldType::PLAYER1)
 		{
-			xandosString.push_back(Player::getPlayer(FieldType::PLAYER1).getSymbolString());
+			xandosString.push_back(Config::Language::getTranslation(Player::getPlayer(FieldType::PLAYER1).getSymbolString()));
 		}
 		else if (field.getPlayAt(i) == FieldType::PLAYER2)
 		{
-			xandosString.push_back(Player::getPlayer(FieldType::PLAYER2).getSymbolString());
+			xandosString.push_back(Config::Language::getTranslation(Player::getPlayer(FieldType::PLAYER2).getSymbolString()));
 		}
 		else
 		{
@@ -334,9 +412,9 @@ std::string table(Field& field)
 	for (int i = 0; i < xandosString.size(); i++)
 	{
 		auto fg = rang::fg::reset;
-		if (xandosString.at(i) == "X")
+		if (field.getPlayAt(i) == FieldType::PLAYER1)
 			fg = rang::fg::cyan;
-		else if (xandosString.at(i) == "O")
+		else if (field.getPlayAt(i) == FieldType::PLAYER2)
 			fg =  rang::fg::yellow;
 
 		if (i % 3 == 2 && i != 0)
@@ -379,7 +457,7 @@ void printError(std::string exception)
 
 void pause()
 {
-	std::cout << "Mit Eingabe (Enter) fortsetzen ..." << std::endl;
+	std::cout << Config::Language::getTranslation("misc.enter") << std::endl;
 	std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 }
 

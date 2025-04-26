@@ -4,7 +4,6 @@
 #include <sstream>
 #include <vector>
 #include <exception>
-#include <ShlObj.h>
 
 #include "Player.h"
 
@@ -150,6 +149,7 @@ namespace Config
 		bool functional = false;
 
 		std::map<std::string, std::string> translations;
+		std::map<std::string, char> maskedCharacter;
 
 		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
 		static inline std::vector<Language> languageList;
@@ -158,6 +158,7 @@ namespace Config
 		bool serialize() override { return false; }
 
 		Language(std::string name);
+		std::string maskPhrases(std::string phrases);
 
 		static void loadLanguageList();
 
@@ -166,6 +167,9 @@ namespace Config
 		static std::vector<Language> getLanguageList(const bool reload = false);
 		static bool loadLanguage(std::string name);
 		static std::string getTranslation(std::string key);
+		std::string getFilename();
+		std::string getDisplayName();
+		std::string getRegion();
 	};
 
 	class LanguageNotReadableException : public std::exception
