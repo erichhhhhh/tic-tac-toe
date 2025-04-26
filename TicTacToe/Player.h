@@ -9,13 +9,10 @@ class Player
 		enum class Symbol symbol;
 		enum class PlayerType type;
 		enum class FieldType playerFieldType;
-		std::string symbolString;
 		enum class MinimaxRole minimaxRole;
 		enum class WinningDetection winningDetection;
 
 		static inline std::map<enum FieldType, Player> playerlist;
-		Player(enum class FieldType playerFieldType, enum class PlayerType type, enum class Symbol symbol, std::string symbolString, enum class MinimaxRole minimaxRole, enum class WinningDetection winningDetection) 
-			: playerFieldType(playerFieldType), type(type), symbol(symbol), symbolString(symbolString), minimaxRole(minimaxRole), winningDetection(winningDetection) {}
 
 	public:
 		static int8_t minimax(Field& field, Player& player);

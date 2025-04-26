@@ -1,8 +1,6 @@
-#include "Field.h"
-#include "FieldAnalyser.h"
-#include "Player.h"
-#include "Config.h"
 #include "UserInteraction.h"
+#include "Config.h"
+
 
 int main()
 {
@@ -15,8 +13,15 @@ int main()
     }
     catch (Config::LanguageNotReadableException e)
     {
-        printError(e.what());
-        return 121;
+        try
+        {
+            Config::Language::loadLanguage("en-US");
+        }
+        catch (Config::LanguageNotReadableException e)
+        {
+            printError(e.what());
+            return 121;
+        }
     }
     
     try

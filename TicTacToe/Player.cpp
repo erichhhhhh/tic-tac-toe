@@ -199,7 +199,7 @@ bool Player::isComputer()
 
 enum class Symbol Player::getSymbol()
 {
-	return Player::symbol == Symbol::X ? Symbol::X : Symbol::O;
+	return Player::symbol;
 }
 
 enum FieldType Player::getPlayerFieldType()
@@ -209,7 +209,15 @@ enum FieldType Player::getPlayerFieldType()
 
 std::string Player::getSymbolString()
 {
-	return symbolString;
+	switch (Player::symbol)
+	{
+	case Symbol::X:
+		return "symbol.X";
+	case Symbol::O:
+		return "symbol.O";
+	default:
+		throw std::exception();
+	}
 }
 
 enum class MinimaxRole Player::getMinimaxRole()
@@ -267,7 +275,7 @@ void Player::playerInput(Player& player, Field& field)
 		}
 		catch (std::exception e)
 		{
-			std::cout << "Eingabe gescheitert, bitte erneut versuchen" << std::endl;
+			std::cout << Config::Language::getTranslation("misc.wrong_input") << std::endl;
 		}
 	}
 }
@@ -280,9 +288,12 @@ Player::Player(enum FieldType playerFieldType, enum PlayerType type, enum Symbol
 	}
 	else
 	{
-		Player player(playerFieldType, type, symbol, "", minimaxRole, winningDetection);
-		player.symbolString = player.getSymbol() == Symbol::X ? "X" : "O";
-		Player::addPlayer(player.playerFieldType, player);
+		this->playerFieldType = playerFieldType;
+		this->type = type;
+		this->symbol = symbol;
+		this->minimaxRole = minimaxRole;
+		this->winningDetection = winningDetection;
+		Player::addPlayer(this->playerFieldType, *this);
 	}
 }
 

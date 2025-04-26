@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <ShlObj.h>
+#include <exception>
 
 #include "Player.h"
 
@@ -32,31 +32,42 @@ namespace Config
 		LanguageFile
 	};
 
+	struct Path
+	{
+	public:
+		std::string directory;
+		std::string filename;
+
+		Path(ConfigFiles type, std::string fileSpecifier = "");
+		std::string getPath();
+	protected:
+		Path(std::string directory, std::string filename);
+	private:
+		static std::string getDir(int id);
+		static std::map <enum ConfigFiles, Path> unspecified_paths;
+		static std::map <ConfigFiles, std::pair<Path, std::string>> specified_paths;
+	};
+
+	class PathNotRetrievableException : std::exception
+	{
+		std::string path;
+	public:
+		PathNotRetrievableException(std::string path) : path(path) {};
+		const char* what() const throw();
+	};
+
 	class AbstractConfig
 	{
 	public:
 		virtual bool serialize() = 0;
 		virtual bool deserialize() = 0;
 
-		struct Path
-		{
-			std::string directory;
-			std::string filename;
-
-			Path() {}
-			Path(std::string directory, std::string filename);
-			std::string getPath();
-		};
-
 	protected:
 
 		enum ConfigFiles type = ConfigFiles::ABSTRACT;
-		Path path;
+		Path path = Path(ConfigFiles::ABSTRACT);
 		int8_t version = 0;
 
-		static std::string getDir(int id);
-
-		static std::map <enum ConfigFiles, Path> paths;
 	};
 
 
@@ -76,7 +87,7 @@ namespace Config
 		Config()
 		{
 			type = ConfigFiles::GeneralConfig;
-			path = paths.at(type);
+			path = Path(ConfigFiles::GeneralConfig);
 			version = 2;
 		}
 
@@ -132,25 +143,33 @@ namespace Config
 	class Language : public AbstractConfig
 	{
 	private:
-		std::string lang;
-		std::string name;
+		std::string filename;
+		std::string displayName;
 		std::string region;
 		bool functional = false;
 
 		std::map<std::string, std::string> translations;
+		std::map<std::string, char> maskedCharacter;
 
 		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
+		static inline std::vector<Language> languageList;
 
 		bool deserialize() override;
 		bool serialize() override { return false; }
 
 		Language(std::string name);
+		std::string maskPhrases(std::string phrases);
+
+		static void loadLanguageList();
 
 	public:
 
-		static std::vector<Language> listLanguages();
+		static std::vector<Language> getLanguageList(const bool reload = false);
 		static bool loadLanguage(std::string name);
 		static std::string getTranslation(std::string key);
+		std::string getFilename();
+		std::string getDisplayName();
+		std::string getRegion();
 	};
 
 	class LanguageNotReadableException : public std::exception

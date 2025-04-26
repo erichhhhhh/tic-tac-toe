@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
 #include <map>
-#include <typeinfo>
+#include <vector>
+#include <iostream>
+#include <exception>
+#include <string>
 
-#include "Field.h"
 #include "Config.h"
 
 inline std::map<int8_t, int8_t> keymap = { {0, 7},{1, 8},{2, 9},{3, 4},{4, 5},{5, 6},{6, 1},{7, 2},{8, 3} };
@@ -33,6 +34,7 @@ void pause();
 
 void clear();
 
+std::string buildOutput(std::string str, auto&&... args);
 
 std::string getInput();
 

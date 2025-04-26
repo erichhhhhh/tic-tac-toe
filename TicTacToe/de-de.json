@@ -1,9 +1,17 @@
 {
-  "lang": "de-DE",
-  "name": "Deutsch",
+  "filename": "de-DE",
+  "displayName": "Deutsch",
   "region": "Deutschland",
+  "version": 2,
   "translations": [
-    [ "title.presentation", "Erik Gerk pr\204sentiert:" ],
+    [ "game.turn_title", "Spieler {}:" ],
+    [ "game.field_selection", "Wähle deinen Zug:" ],
+    [ "game.computers_turn", "Der Computer muss noch überlegen" ],
+    [ "game.win", "{} hat gewonnen!" ],
+    [ "game.draw", "Das Spiel ging unentschieden aus" ],
+    [ "title.play_disabled", "Bitte hinterlege deine Präferenzen in den Einstellungen." ],
+    [ "title.play_disabled.error", "Entschludigung\nDu kannst nicht spielen"], 
+    [ "title.presentation", "Erik Gerk präsentiert" ],
     [ "title.title_art", "   _____  _      _____           _____             \n  |_   _|(_)    |_   _|         |_   _|            \n    | |   _   ___ | |  __ _   ___ | |  ___    ___  \n    | |  | | / __|| | / _` | / __|| | / _ \\  / _ \\ \n    | |  | || (__ | || (_| || (__ | || (_) ||  __/ \n    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n                                                   " ],
     [ "title.play", "1) Spielen" ],
     [ "title.multiplayer", "2) Onlinespiel" ],
@@ -24,11 +32,27 @@
     [ "settings.first_player", "\t4) Klassische\n\t   Spielerreihenfolge\t[{}] (Wenn diese Option aktiviert ist, beginnt Spieler 1 das Spiel,\n\t\t\t\t\tansonsten Spieler 2)\n" ],
     [ "settings.settings_before_game", "\t5) Parameter vor\n\t   Spielbeginn\t\t[{}] (Wenn aktiviert, werden vor jedem Spiel die Einstellungen gezeigt)\n" ],
     [ "settings.difficulty", "\t6) Schwierigkeitsgrad\t[{}]\n" ],
+    [ "settings.language", "\t7) Spracheinstellungen\n" ],
+    [ "settings.language.title", "Sprache auswählen (Seite {0}/{1}):"],
+    [ "settings.language.entry", "{0})\t{1} ({2})" ],
+    [ "settings.language.scroll", "Drücke EINGABE (ENTER), um Seiten zu wechseln" ],
+    [ "settings.language.exit", "0)\tZurück ohne zu speichern" ],
     [ "settings.difficulty.easy", "Einfach" ],
     [ "settings.difficulty.medium", "Mittel" ],
     [ "settings.difficulty.hard", "Schwer" ],
     [ "settings.abort_game", "\t9) Spiel abbrechen\n" ],
     [ "settings.start_game", "\t0) Zum Spiel" ],
-    [ "settings.save_settings", "\t0) Einstellungen speichern" ]
+    [ "settings.save_settings", "\t0) Einstellungen speichern" ],
+    [ "misc.enter", "Mit Eingabe (ENTER) fortsetzen ..." ],
+    [ "misc.wrong_input", "Eingabe gescheitert, bitte erneut versuchen" ]
+  ],
+  "maskedCharacters": [
+    [ "ä", 132 ],
+    [ "Ä", 142 ],
+    [ "ö", 148 ],
+    [ "Ö", 153 ],
+    [ "ü", 129 ],
+    [ "Ü", 154 ],
+    [ "ß", 225 ]
   ]
 }
