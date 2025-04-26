@@ -5,8 +5,6 @@
 #include <tuple>
 #include <ShlObj.h>
 #include <json/json.h>
-#include <ada/idna/to_ascii.h>
-#include <ada/idna/to_unicode.h>
 
 #define VERSION 2
 
