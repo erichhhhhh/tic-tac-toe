@@ -27,7 +27,7 @@ namespace Config
 	enum class ConfigFiles
 	{
 		ABSTRACT,
-		GeneralConfig,
+		GameConfig,
 		Serverlist,
 		LanguageFile
 	};

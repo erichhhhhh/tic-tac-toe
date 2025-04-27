@@ -6,7 +6,7 @@
 
 enum class WinningType
 {
-	NOT_WON = 0,
+	UNFINISHED = 0,
 	PLAYER1 = 1,
 	PLAYER2 = 2,
 	DRAW = 3
