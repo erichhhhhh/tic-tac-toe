@@ -95,7 +95,7 @@ int8_t Player::minimax(Field& origField, Player& player)
 int Player::minimax(Field& field, FieldType origFieldType, FieldType plFieldType, MinimaxRole minimaxRole, const int& depth)
 {
 
-	enum WinningType winner = detectWinner(field);
+	WinningType winner = detectWinner(field);
 
 	if (winner == toWinningType(origFieldType))
 	{
@@ -164,7 +164,7 @@ int Player::stopWin(Field& origField, FieldType plFieldType, MinimaxRole minimax
 			{
 				field.setPlayAt(i, !plFieldType);
 
-				enum WinningType winner = detectWinner(field);
+				WinningType winner = detectWinner(field);
 
 				field.unsetPlayAt(i);
 
@@ -177,7 +177,7 @@ int Player::stopWin(Field& origField, FieldType plFieldType, MinimaxRole minimax
 			{
 				field.setPlayAt(i, plFieldType);
 
-				enum WinningType winner = detectWinner(field);
+				WinningType winner = detectWinner(field);
 
 				field.unsetPlayAt(i);
 

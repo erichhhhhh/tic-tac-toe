@@ -42,7 +42,7 @@ namespace Config
     std::map<enum ConfigFiles, Path> Path::unspecified_paths =
     {
         std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
-        std::pair <enum ConfigFiles, Path>(ConfigFiles::GeneralConfig, Path(getDir(CSIDL_APPDATA), "config.json")),
+        std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(getDir(CSIDL_APPDATA), "config.json")),
         std::pair <enum ConfigFiles, Path> (ConfigFiles::Serverlist, Path(getDir(CSIDL_APPDATA), "serverlist.json")),
         std::pair<ConfigFiles, Path>(ConfigFiles::LanguageFile, Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
     };

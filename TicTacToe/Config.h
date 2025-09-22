@@ -86,8 +86,8 @@ namespace Config
 
 		Config()
 		{
-			type = ConfigFiles::GeneralConfig;
-			path = Path(ConfigFiles::GeneralConfig);
+			type = ConfigFiles::GameConfig;
+			path = Path(ConfigFiles::GameConfig);
 			version = 2;
 		}
 

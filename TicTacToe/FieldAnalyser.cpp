@@ -4,7 +4,7 @@
 #include "Player.h"
 #include "Config.h"
 
-enum WinningType detectWinner(Field& field)
+WinningType detectWinner(Field& field)
 {
     int testingValues[8][3] =
     {
@@ -53,12 +53,12 @@ enum WinningType detectWinner(Field& field)
         return WinningType::DRAW;
     }
 
-    return WinningType::NOT_WON;
+    return WinningType::UNFINISHED;
 }
 
-std::string printWinningMessage(enum WinningType winner)
+std::string printWinningMessage(WinningType winner)
 {
-    if (winner == WinningType::NOT_WON)
+    if (winner == WinningType::UNFINISHED)
     {
         throw NotWonException();
     }
@@ -88,7 +88,7 @@ bool isGameWon(Field& field)
 {
     WinningType winningType = detectWinner(field);
 
-    if (winningType == WinningType::NOT_WON)
+    if (winningType == WinningType::UNFINISHED)
     {
         return false;
     }
@@ -98,23 +98,34 @@ bool isGameWon(Field& field)
     }
 }
 
-enum FieldType toFieldType(enum WinningType wtype)
+FieldType toFieldType(WinningType wtype)
 {
-    int iWType = static_cast<int>(wtype);
-    return static_cast<FieldType>(iWType);
+    switch (wtype)
+    {
+    case WinningType::PLAYER1:
+        return FieldType::PLAYER1;
+        break;
+    case WinningType::PLAYER2:
+        return FieldType::PLAYER2;
+        break;
+    default:
+        return FieldType::EMPTY;
+        break;
+    }
 }
 
-enum WinningType toWinningType(enum FieldType ftype)
+WinningType toWinningType(FieldType ftype)
 {
-    int iFType = static_cast<int>(ftype);
-    
-    if (iFType == 1 || iFType == 2)
+    switch (ftype)
     {
-        return static_cast<WinningType>(iFType);
-    }
-    else
-    {
-        return WinningType::NOT_WON;
+    case FieldType::PLAYER1:
+        return WinningType::PLAYER1;
+        break;
+    case FieldType::PLAYER2:
+        return WinningType::PLAYER2;
+        break;
+    default:
+        return WinningType::UNFINISHED;
     }
 }
 
