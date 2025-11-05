@@ -44,12 +44,12 @@ namespace Config
         std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
         std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(getDir(CSIDL_APPDATA), "config.json")),
         std::pair <enum ConfigFiles, Path> (ConfigFiles::Serverlist, Path(getDir(CSIDL_APPDATA), "serverlist.json")),
-        std::pair<ConfigFiles, Path>(ConfigFiles::LanguageFile, Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
+        std::pair<enum ConfigFiles, Path>(ConfigFiles::LanguageFile, Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
     };
 
-    std::map<ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
+    std::map<enum ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
     {
-        std::pair<ConfigFiles, std::pair<Path, std::string>>
+        std::pair<enum ConfigFiles, std::pair<Path, std::string>>
         (
             ConfigFiles::LanguageFile, 
             std::pair<Path, std::string>(Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""), ".json")
