@@ -75,7 +75,7 @@ namespace Config
 	{
 
 		/*
-		* How to properly add a param:
+		* How to properly add a parameter:
 		* 1. private Attribute
 		* 2. Define getter and setter
 		* 3. Add to operator==
