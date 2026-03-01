@@ -20,7 +20,7 @@ void Field::setPlayAt(int pos, enum FieldType fieldType)
 
 void Field::unsetPlayAt(int pos)
 {
-	if (pos > 8 || pos < 0)
+	if (pos > 8 && pos < 0)
 	{
 		throw FieldIOException(pos, FieldType::EMPTY);
 	}
@@ -30,7 +30,7 @@ void Field::unsetPlayAt(int pos)
 
 enum FieldType Field::getPlayAt(int pos)
 {
-	if (pos < 9 || pos > 0) 
+	if (pos < 9 && pos >= 0) 
 	{
 		return Field::field.at(pos);
 	}
