@@ -12,6 +12,7 @@ public:
 	Field();
 
 	bool empty(int pos);
+	bool reset();
 	int8_t fullness();
 	Field& operator=(const Field& field);
 

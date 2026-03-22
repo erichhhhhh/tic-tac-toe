@@ -164,16 +164,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Field.cpp" />
-    <ClCompile Include="FieldAnalyser.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="TicTacToe.cpp" />
     <ClCompile Include="UserInteraction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Enums.h" />
     <ClInclude Include="Field.h" />
-    <ClInclude Include="FieldAnalyser.h" />
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="UserInteraction.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="resource.h" />

@@ -8,7 +8,7 @@
 
 #include <rang.hpp>
 
-#include "FieldAnalyser.h"
+#include "Menu.h"
 
 
 std::string buildOutput(std::string str, auto&&... args)
@@ -28,17 +28,17 @@ void languageSettings(Config::Config& config)
 #endif
 	while (true)
 	{
-		for (int i = 0; i < langlist.size(); i += 10)
+		for (size_t i = 0; i < langlist.size(); i += 10)
 		{
 			clear();
 			std::string titleTranslation = Config::Language::getTranslation("settings.language.title");
-			int page = (i / 10) + 1;
-			int allPages = ((langlist.size() / 10) + ((langlist.size() % 10 > 0) ? 1 : 0));
+			size_t page = (i / 10) + 1;
+			size_t allPages = ((langlist.size() / 10) + ((langlist.size() % 10 > 0) ? 1 : 0));
 			std::string outputTitle = std::vformat(titleTranslation, std::make_format_args(page, allPages));
 			std::cout << outputTitle << "\n" << std::endl;
-			for (int j = 0; j < 10 && (langlist.size() - i) > j; j++)
+			for (size_t j = 0; j < 10 && (langlist.size() - i) > j; j++)
 			{
-				int target = i * 10 + j;
+				size_t target = i * 10 + j;
 				std::string targetString = std::to_string(target+1);
 				std::string displayName = langlist.at(target).getDisplayName();
 				std::string region = langlist.at(target).getRegion();
@@ -82,25 +82,20 @@ void mainMenu(bool playDisabled, Config::Config& config)
 				playDisabled = false;
 			}
 		}
-		std::cout << Config::Language::getTranslation("title.presentation") << std::endl; // Erik Gerk pr\204sentiert:
 
-		std::cout << rang::fg::green << rang::style::blink << Config::Language::getTranslation("title.title_art") << rang::style::reset << std::endl;
+		
+		std::vector<std::string> rawMenu = {
+			"title.presentation",
+			"title.title_art",
+			"title.play",
+			"title.multiplayer",
+			"title.settings",
+			"title.exit"
+		};
 
+		Menu mainmenu = Menu::rawMenu(rawMenu, MenuInput::FREEFIELD);
 
-		rang::style style = rang::style::reset;
-
-		if (playDisabled)
-		{
-			style = rang::style::crossed;
-		}
-
-		std::cout
-			<< style
-			<< Config::Language::getTranslation("title.play") << std::endl // 1) Spielen
-			<< Config::Language::getTranslation("title.multiplayer") << std::endl // 2) Onlinespiel
-			<< rang::style::reset
-			<< Config::Language::getTranslation("title.settings") << std::endl // 3) Einstellungen
-			<< Config::Language::getTranslation("title.exit") << std::endl; // 0) Beenden
+		std::cout << mainmenu.render() << std::endl;
 
 		if (playDisabled)
 		{
@@ -132,7 +127,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 								try
 								{
 									settings(tmpConfig, true);
-									launchGame(tmpConfig);
+									launchGame(tmpConfig, Connectivity::LOCAL);
 								}
 								catch (std::exception e)
 								{
@@ -141,7 +136,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 						}
 						else
 						{
-							launchGame(config);
+							launchGame(config, Connectivity::LOCAL);
 						}
 					}
 					else if (ipt == 2)
@@ -166,70 +161,107 @@ void mainMenu(bool playDisabled, Config::Config& config)
 		clear();
 	}
 }
-
-void launchGame(Config::Config& config)
+void updateField(IEngine& engine, bool finished)
 {
-	bool playerIsX = config.getFirstPlayer() == FieldType::PLAYER1;
-
-	enum Config::PlayerAmount testVal = config.getPlayerAmount();
-	enum Config::Difficulty difficulty = config.getDifficulty();
-
-	if (testVal == Config::PlayerAmount::COMPUTER_ONLY)
+	clear();
+	if (!finished)
 	{
-		bool player1Max = static_cast<bool>(std::rand() % 2);
-		Player player1(FieldType::PLAYER1, PlayerType::COMPUTER, Symbol::X, player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, !player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
-		Player player2(FieldType::PLAYER2, PlayerType::COMPUTER, Symbol::O, !player1Max ? MinimaxRole::MAX : MinimaxRole::MIN, player1Max ? WinningDetection::ENABLED : WinningDetection::DISABLED);
+		std::string playerStr = Config::Language::getTranslation(engine.getSymbol(engine.getTurn()) == Symbol::X ? "symbol.X" : "symbol.O");
+		std::string title = std::vformat(Config::Language::getTranslation("game.turn_title"), std::make_format_args(playerStr));
+		std::cout << title << std::endl;
 	}
-	else if (testVal == Config::PlayerAmount::COMPUTER_PLAYER)
+	else
 	{
-		/*
-		This code has to be rewritten after implementation of a difficulty level
-		*/
-		Player player1(FieldType::PLAYER1, PlayerType::PLAYER, playerIsX == true ? Symbol::X : Symbol::O, MinimaxRole::NOPART, WinningDetection::NONE);
-		Player player2(FieldType::PLAYER2, PlayerType::COMPUTER, playerIsX == false ? Symbol::X : Symbol::O, difficulty == Config::Difficulty::EASY ? MinimaxRole::MIN : MinimaxRole::MAX, difficulty == Config::Difficulty::HARD ? WinningDetection::ENABLED : WinningDetection::DISABLED);
+		std::cout << printWinningMessage(engine) << std::endl;
 	}
-	else if (testVal == Config::PlayerAmount::PLAYER_ONLY)
-	{
-		Player player1(FieldType::PLAYER1, PlayerType::PLAYER, playerIsX == true ? Symbol::X : Symbol::O, MinimaxRole::NOPART, WinningDetection::NONE);
-		Player player2(FieldType::PLAYER2, PlayerType::PLAYER, playerIsX == false ? Symbol::X : Symbol::O, MinimaxRole::NOPART, WinningDetection::NONE);
+	std::cout << table(engine) << std::endl;
+}
+
+void launchGame(Config::Config& config, Connectivity connectivity)
+{
+	std::unique_ptr<IEngine> engine;
+	std::unique_ptr<EngineConfig> engineConfig;
+
+	if (connectivity == Connectivity::LOCAL) {
+		auto localConfig = std::make_unique<LocalEngineConfig>();
+		auto localEngine = std::make_unique<LocalEngine>();
+		localConfig->gameType = config.getGameType();
+		localConfig->difficulty = config.getDifficulty();
+		engineConfig = std::move(localConfig);
+		engine = std::move(localEngine);
+	}
+	else if (connectivity == Connectivity::REMOTE) {
 	}
 
-	Field field;
-
-	while (true)
-	{
-		for (int i = 1; i < 3; i++)
+	engineConfig->callbacks.onUpdate = [](IEngine& engine) {};
+	engineConfig->callbacks.onInteractiveTurn = [](IEngine& engine, bool firstTry) -> int8_t
 		{
-			clear();
-			Player player = Player::getPlayer(static_cast<FieldType>(i));
-			std::string playerStr = Config::Language::getTranslation(player.getSymbolString());
-			std::string title = std::vformat(Config::Language::getTranslation("game.turn_title"), std::make_format_args(playerStr));
-			std::cout << title << std::endl;
-			std::cout << table(field) << std::endl;
-
-			if (Player::getPlayer(static_cast<FieldType>(i)).isComputer())
+			static const std::map<int8_t, int8_t> keymap = { {7, 0}, {8, 1}, {9, 2}, {4, 3}, {5, 4}, {6, 5}, {1, 6}, {2, 7}, {3, 8} };
+			updateField(engine);
+			if (!firstTry)
 			{
-				std::cout << Config::Language::getTranslation("game.computers_turn") << std::endl;
-				pause();
+				std::cout << Config::Language::getTranslation("misc.wrong_input") << std::endl;
 			}
-			else
+			int8_t i_input = numericInput<int8_t>();
+			if (keymap.contains(i_input))
 			{
-				std::cout << Config::Language::getTranslation("game.field_selection") << std::endl;
+				return keymap.at(i_input);
 			}
 
-			Player::getPlayer((enum FieldType)i).play(field);
-
-			if (isGameWon(field))
-			{
-				clear();
-				std::cout << table(field) << std::endl;
-				std::cout << printWinningMessage(field) << std::endl;
-				pause();
-				Player::flushPlayerlist();
-				return;
-			}
-		}
+			return -1;
+		};
+	engineConfig->callbacks.onNonInteractiveTurn = [](IEngine& engine) -> void
+		{
+			updateField(engine);
+			std::cout << Config::Language::getTranslation("game.computers_turn") << std::endl;
+			pause();
+		};
+	try
+	{
+		engine->sendSettings(*engineConfig);
 	}
+	catch (std::exception& e)
+	{
+		printError(e.what());
+		return;
+	}
+	engine->launchGame();
+
+	updateField(*engine, true);
+	pause();
+}
+
+std::string printWinningMessage(IEngine& engine)
+{
+	GameStatus gameStatus = engine.getStatus();
+
+	if (gameStatus.isUnfinished())
+	{
+		throw std::exception("Game was unfinished");
+	}
+	else if (gameStatus.isDraw())
+	{
+		return Config::Language::getTranslation("game.draw");
+	}
+	else if (gameStatus.hasWinner())
+	{
+		Symbol enumSymbol = engine.getSymbol(gameStatus);
+		std::string symbol;
+		if (enumSymbol == Symbol::X)
+		{
+			symbol = Config::Language::getTranslation("symbol.X");
+		}
+		else
+		{
+			symbol = Config::Language::getTranslation("symbol.O");
+		}
+		return std::vformat(Config::Language::getTranslation("game.win"), std::make_format_args(symbol));
+	}
+	else
+	{
+		throw std::exception("Enum could not be compared");
+	}
+
 }
 
 void settings(Config::Config& config, const bool& areTempSettings)
@@ -249,7 +281,7 @@ void settings(Config::Config& config, const bool& areTempSettings)
 			<< symbol
 			<< std::endl;
 
-		std::string plAmount = ((config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_ONLY) ? Config::Language::getTranslation("settings.player_amount.computer_only") : (config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_PLAYER) ? Config::Language::getTranslation("settings.player_amount.computer_and_player") : Config::Language::getTranslation("settings.player_amount.player_only"));
+		std::string plAmount = ((config.getGameType() == GameType::AIvAI) ? Config::Language::getTranslation("settings.player_amount.computer_only") : (config.getGameType() == GameType::PvAI) ? Config::Language::getTranslation("settings.player_amount.computer_and_player") : Config::Language::getTranslation("settings.player_amount.player_only"));
 		std::string playerAmount = std::vformat(Config::Language::getTranslation("settings.player_amount"), std::make_format_args(plAmount));
 		std::cout
 			<< playerAmount
@@ -262,7 +294,7 @@ void settings(Config::Config& config, const bool& areTempSettings)
 			<< isSymbolEnforced
 			<< std::endl;
 
-		std::string fstPlayer = ((config.getFirstPlayer() == FieldType::PLAYER1) ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
+		std::string fstPlayer = ((config.getFirstPlayer() == PlayerID::PLAYER1) ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
 		std::string firstPlayer = std::vformat(Config::Language::getTranslation("settings.first_player"),
 			std::make_format_args(fstPlayer));
 		std::cout
@@ -279,8 +311,8 @@ void settings(Config::Config& config, const bool& areTempSettings)
 				<< std::endl;
 		}
 
-		std::string dffclty = ((config.getDifficulty() == Config::Difficulty::EASY)
-			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Config::Difficulty::MIDDLE)
+		std::string dffclty = ((config.getDifficulty() == Difficulty::EASY)
+			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Difficulty::MIDDLE)
 			? Config::Language::getTranslation("settings.difficulty.medium") : Config::Language::getTranslation("settings.difficulty.hard"));
 		std::string difficulty = std::vformat(Config::Language::getTranslation("settings.difficulty"),
 			std::make_format_args(dffclty));
@@ -317,16 +349,16 @@ void settings(Config::Config& config, const bool& areTempSettings)
 			config.setPreferedSymbol((config.getPreferedSymbol() == Symbol::X) ? Symbol::O : Symbol::X);
 			break;
 		case 2:
-			config.setPlayerAmount((config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_ONLY) 
-				? Config::PlayerAmount::COMPUTER_PLAYER : (config.getPlayerAmount() == Config::PlayerAmount::COMPUTER_PLAYER) 
-				? Config::PlayerAmount::PLAYER_ONLY : (config.getPlayerAmount() == Config::PlayerAmount::PLAYER_ONLY) 
-				? Config::PlayerAmount::COMPUTER_ONLY : Config::PlayerAmount::COMPUTER_ONLY);
+			config.setGameType((config.getGameType() == GameType::AIvAI) 
+				? GameType::PvAI : (config.getGameType() == GameType::PvAI) 
+				? GameType::PvP : (config.getGameType() == GameType::PvP) 
+				? GameType::AIvAI : GameType::AIvAI);
 			break;
 		case 3:
 			config.setIfSymbolEnforced(!config.isSymbolEnforced());
 			break;
 		case 4:
-			config.setFirstPlayer((config.getFirstPlayer() == FieldType::PLAYER1) ? FieldType::PLAYER2 : FieldType::PLAYER1);
+			config.setFirstPlayer((config.getFirstPlayer() == PlayerID::PLAYER1) ? PlayerID::PLAYER2 : PlayerID::PLAYER1);
 			break;
 		case 5:
 			if (!areTempSettings)
@@ -339,10 +371,10 @@ void settings(Config::Config& config, const bool& areTempSettings)
 				break;
 			}
 		case 6:
-			config.setDifficulty((config.getDifficulty() == Config::Difficulty::EASY) 
-				? Config::Difficulty::MIDDLE : (config.getDifficulty() == Config::Difficulty::MIDDLE) 
-				? Config::Difficulty::HARD : (config.getDifficulty() == Config::Difficulty::HARD) 
-				? Config::Difficulty::EASY : Config::Difficulty::HARD);
+			config.setDifficulty((config.getDifficulty() == Difficulty::EASY) 
+				? Difficulty::MIDDLE : (config.getDifficulty() == Difficulty::MIDDLE) 
+				? Difficulty::HARD : (config.getDifficulty() == Difficulty::HARD) 
+				? Difficulty::EASY : Difficulty::HARD);
 			break;
 		case 7:
 			if(!areTempSettings)
@@ -374,23 +406,24 @@ void settings(Config::Config& config, const bool& areTempSettings)
 	}
 }
 
-std::string table(Field& field)
+std::string table(IEngine& engine)
 {
 	std::vector<std::string> xandosString;
 	std::string output;
+	std::array<PlayerID, 9> field = engine.getField();
 	for (int i = 0; i < 9; i++)
 	{
-		if (field.getPlayAt(i) == FieldType::EMPTY)
+		if (field.at(i) == PlayerID::NONE)
 		{
 			xandosString.push_back(std::to_string(keymap.at(i)));
 		}
-		else if (field.getPlayAt(i) == FieldType::PLAYER1)
+		else if (field.at(i) == PlayerID::PLAYER1)
 		{
-			xandosString.push_back(Config::Language::getTranslation(Player::getPlayer(FieldType::PLAYER1).getSymbolString()));
+			xandosString.push_back(Config::Language::getTranslation(engine.getSymbol(PlayerID::PLAYER1) == Symbol::X ? "symbol.X" : "symbol.O"));
 		}
-		else if (field.getPlayAt(i) == FieldType::PLAYER2)
+		else if (field.at(i) == PlayerID::PLAYER2)
 		{
-			xandosString.push_back(Config::Language::getTranslation(Player::getPlayer(FieldType::PLAYER2).getSymbolString()));
+			xandosString.push_back(Config::Language::getTranslation(engine.getSymbol(PlayerID::PLAYER2) == Symbol::X ? "symbol.X" : "symbol.O"));
 		}
 		else
 		{
@@ -411,9 +444,9 @@ std::string table(Field& field)
 	for (int i = 0; i < xandosString.size(); i++)
 	{
 		auto fg = rang::fg::reset;
-		if (field.getPlayAt(i) == FieldType::PLAYER1)
+		if (field.at(i) == PlayerID::PLAYER1)
 			fg = rang::fg::cyan;
-		else if (field.getPlayAt(i) == FieldType::PLAYER2)
+		else if (field.at(i) == PlayerID::PLAYER2)
 			fg =  rang::fg::yellow;
 
 		if (i % 3 == 2 && i != 0)
