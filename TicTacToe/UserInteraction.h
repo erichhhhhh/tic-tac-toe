@@ -7,6 +7,7 @@
 #include <string>
 
 #include "Config.h"
+#include "Engine.h"
 
 inline std::map<int8_t, int8_t> keymap = { {0, 7},{1, 8},{2, 9},{3, 4},{4, 5},{5, 6},{6, 1},{7, 2},{8, 3} };
 
@@ -21,12 +22,15 @@ inline std::string tictactoe_title =
 
 void mainMenu(bool playDisabled, Config::Config& config);
 
-void launchGame(Config::Config& config);
+void launchGame(Config::Config& config, Connectivity connectivity);
 
 void settings(Config::Config& config, const bool& areTempSettings);
 
+void updateField(IEngine& engine, bool finished = false);
 
-std::string table(Field& field);
+std::string printWinningMessage(IEngine& engine);
+
+std::string table(IEngine& engine);
 
 void printError(std::string exception);
 

@@ -5,24 +5,10 @@
 #include <vector>
 #include <exception>
 
-#include "Player.h"
+#include "Enums.h"
 
 namespace Config
 {
-
-	enum class Difficulty
-	{
-		EASY,
-		MIDDLE,
-		HARD
-	};
-
-	enum class PlayerAmount
-	{
-		COMPUTER_ONLY,
-		COMPUTER_PLAYER,
-		PLAYER_ONLY
-	};
 
 	enum class ConfigFiles
 	{
@@ -88,7 +74,7 @@ namespace Config
 		{
 			type = ConfigFiles::GameConfig;
 			path = Path(ConfigFiles::GameConfig);
-			version = 2;
+			version = 3;
 		}
 
 		bool serialize() override;
@@ -97,16 +83,16 @@ namespace Config
 		enum class Symbol getPreferedSymbol() const{ return preferedSymbol; }
 		void setPreferedSymbol(const enum class Symbol& symbol) { preferedSymbol = symbol; }
 
-		enum class PlayerAmount getPlayerAmount() const { return playerAmount; }
-		void setPlayerAmount(const enum class PlayerAmount& amount) { playerAmount = amount; }
+		GameType getGameType() const { return gameType; }
+		void setGameType(const GameType& type) { gameType = type; }
 
 		bool isSymbolEnforced() const { return enforceSymbol; }
 		void setIfSymbolEnforced(const bool& param) { enforceSymbol = param; }
 
-		enum class FieldType getFirstPlayer() const { return firstPlayer; }
-		void setFirstPlayer(const enum class FieldType& symbol)
+		PlayerID getFirstPlayer() const { return firstPlayer; }
+		void setFirstPlayer(const PlayerID& symbol)
 		{ 
-			if(symbol != FieldType::EMPTY)
+			if(symbol != PlayerID::NONE)
 				firstPlayer = symbol; 
 		}
 
@@ -125,10 +111,10 @@ namespace Config
 
 	private:
 		enum Symbol preferedSymbol = Symbol::X;
-		enum PlayerAmount playerAmount = PlayerAmount::COMPUTER_PLAYER;
+		enum GameType gameType = GameType::PvAI;
 		bool enforceSymbol = false;
 
-		enum FieldType firstPlayer = FieldType::PLAYER1;
+		PlayerID firstPlayer = PlayerID::PLAYER1;
 		bool showSettingsBeforeGame = true;
 		enum class Difficulty difficulty = Difficulty::HARD;
 		std::string language = "en-US";

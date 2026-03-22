@@ -100,7 +100,7 @@ namespace Config
         Json::Value object;
 
         object["preferedSymbol"] = static_cast<int>(preferedSymbol);
-        object["playerAmount"] = static_cast<int>(playerAmount);
+        object["gameType"] = static_cast<int>(gameType);
         object["enforceSymbol"] = enforceSymbol;
         object["firstPlayer"] = static_cast<int>(firstPlayer);
         object["showSettingsBeforeGame"] = showSettingsBeforeGame;
@@ -155,6 +155,10 @@ namespace Config
             if (object["version"].asInt() == 1)
             {
                 object["difficulty"] = static_cast<int>(Difficulty::HARD);
+            } 
+            else if (object["version"].asInt() == 2)
+            {
+                object["gameType"] = object["playerAmount"];
             }
         }
 
@@ -168,9 +172,9 @@ namespace Config
         }
 
         preferedSymbol = static_cast<enum Symbol>(object["preferedSymbol"].asInt());
-        playerAmount = static_cast<enum PlayerAmount>(object["playerAmount"].asInt());
+        gameType = static_cast<GameType>(object["gameType"].asInt());
         enforceSymbol = object["enforceSymbol"].asBool();
-        firstPlayer = static_cast<enum FieldType>(object["firstPlayer"].asInt());
+        firstPlayer = static_cast<enum PlayerID>(object["firstPlayer"].asInt());
         showSettingsBeforeGame = object["showSettingsBeforeGame"].asBool();
         difficulty = static_cast<enum Difficulty>(object["difficulty"].asInt());
 
@@ -193,14 +197,14 @@ namespace Config
 
     bool Config::operator==(const Config& config) const
     {
-        return std::tie(preferedSymbol, playerAmount, enforceSymbol, firstPlayer, showSettingsBeforeGame, difficulty, language)
-            == std::tie(config.preferedSymbol, config.playerAmount, config.enforceSymbol, config.firstPlayer, config.showSettingsBeforeGame, config.difficulty, config.language);
+        return std::tie(preferedSymbol, gameType, enforceSymbol, firstPlayer, showSettingsBeforeGame, difficulty, language)
+            == std::tie(config.preferedSymbol, config.gameType, config.enforceSymbol, config.firstPlayer, config.showSettingsBeforeGame, config.difficulty, config.language);
     }
 
     Config& Config::operator=(const Config& config)
     {
         this->preferedSymbol = config.preferedSymbol;
-        this->playerAmount = config.playerAmount;
+        this->gameType = config.gameType;
         this->enforceSymbol = config.enforceSymbol;
         this->firstPlayer = config.firstPlayer;
         this->showSettingsBeforeGame = config.showSettingsBeforeGame;

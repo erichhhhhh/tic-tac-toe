@@ -42,10 +42,7 @@ enum FieldType Field::getPlayAt(int pos)
 
 Field::Field()
 {
-	for (int i = 0; i < Field::field.size(); i++) 
-	{
-		Field::field.at(i) = FieldType::EMPTY;
-	}
+	this->reset();
 }
 
 bool Field::empty(int pos)
@@ -58,6 +55,15 @@ bool Field::empty(int pos)
 	{
 		return false;
 	}
+}
+
+bool Field::reset()
+{
+	for(int i = 0; i < Field::field.size(); i++)
+	{
+		Field::field.at(i) = FieldType::EMPTY;
+	}
+	return true;
 }
 
 int8_t Field::fullness()
