@@ -182,15 +182,29 @@ void launchGame(Config::Config& config, Connectivity connectivity)
 	std::unique_ptr<IEngine> engine;
 	std::unique_ptr<EngineConfig> engineConfig;
 
-	if (connectivity == Connectivity::LOCAL) {
+	if (connectivity == Connectivity::LOCAL) 
+	{
 		auto localConfig = std::make_unique<LocalEngineConfig>();
 		auto localEngine = std::make_unique<LocalEngine>();
 		localConfig->gameType = config.getGameType();
 		localConfig->difficulty = config.getDifficulty();
+		localConfig->firstPlayer = config.getFirstPlayer();
 		engineConfig = std::move(localConfig);
 		engine = std::move(localEngine);
 	}
-	else if (connectivity == Connectivity::REMOTE) {
+	else if (connectivity == Connectivity::REMOTE) 
+	{
+	}
+
+	if (config.getPreferedSymbol() == Symbol::X)
+	{
+		engineConfig->playerSymbols.x = PlayerID::PLAYER1;
+		engineConfig->playerSymbols.o = PlayerID::PLAYER2;
+	}
+	else
+	{
+		engineConfig->playerSymbols.o = PlayerID::PLAYER1;
+		engineConfig->playerSymbols.x = PlayerID::PLAYER2;
 	}
 
 	engineConfig->callbacks.onUpdate = [](IEngine& engine) {};
@@ -415,7 +429,10 @@ std::string table(IEngine& engine)
 	{
 		if (field.at(i) == PlayerID::NONE)
 		{
-			xandosString.push_back(std::to_string(keymap.at(i)));
+			if (engine.getStatus().isUnfinished())
+				xandosString.push_back(std::to_string(keymap.at(i)));
+			else
+				xandosString.push_back(" ");
 		}
 		else if (field.at(i) == PlayerID::PLAYER1)
 		{
@@ -444,9 +461,9 @@ std::string table(IEngine& engine)
 	for (int i = 0; i < xandosString.size(); i++)
 	{
 		auto fg = rang::fg::reset;
-		if (field.at(i) == PlayerID::PLAYER1)
+		if (xandosString.at(i) == Config::Language::getTranslation("symbol.X"))
 			fg = rang::fg::cyan;
-		else if (field.at(i) == PlayerID::PLAYER2)
+		else if (xandosString.at(i) == Config::Language::getTranslation("symbol.O"))
 			fg =  rang::fg::yellow;
 
 		if (i % 3 == 2 && i != 0)

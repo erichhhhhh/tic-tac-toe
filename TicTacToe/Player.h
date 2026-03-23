@@ -29,7 +29,7 @@ class Player
 {
 	private:
 		PlayerType type;
-		FieldType playerFieldType;
+		PlayerID playerID;
 		MinimaxRole minimaxRole;
 		WinningDetection winningDetection;
 
@@ -37,17 +37,17 @@ class Player
 
 
 		bool isComputer();
-		FieldType getPlayerFieldType();
+		PlayerID getPlayerID();
 		MinimaxRole getMinimaxRole();
 		WinningDetection getWinningDetection();
 
-		Player(FieldType playerFieldType, PlayerType type, MinimaxRole minimaxRole, WinningDetection winningDetection);
+		Player(PlayerID playerID, PlayerType type, MinimaxRole minimaxRole, WinningDetection winningDetection);
 };
 
 namespace PlayerAI
 {
 	int8_t minimax(Field& field, Player& player);
-	int minimax(Field& origField, FieldType origFieldType, FieldType plFieldType, MinimaxRole minimaxRole, const int& depth);
-	int stopWin(Field& origField, FieldType plFieldType, MinimaxRole minimaxRole, WinningDetection winningDetection);
+	int minimax(Field& origField, PlayerID origPlayerID, PlayerID plPlayerID, MinimaxRole minimaxRole, const int& depth);
+	int stopWin(Field& origField, PlayerID plPlayerID, MinimaxRole minimaxRole, WinningDetection winningDetection);
 
 };

@@ -22,7 +22,6 @@ struct GameStatus {
 	GameStatus() : result(GameResult::UNFINISHED) {}
 	GameStatus(GameResult r) : result(r) {}
 
-	operator FieldType() const;
 	operator PlayerID() const;
 
 	bool hasWinner() const;
@@ -58,6 +57,7 @@ struct LocalEngineConfig : EngineConfig
 {
 	Difficulty difficulty = Difficulty::EASY;
 	GameType gameType = GameType::PvP;
+	PlayerID firstPlayer = PlayerID::PLAYER1;
 
 	LocalEngineConfig()
 	{
@@ -86,6 +86,7 @@ class LocalEngine : public IEngine
 	LocalEngineConfig::CallbackFunctions callbacks;
 	Difficulty difficulty = Difficulty::EASY;
 	GameType gameType = GameType::PvP;
+	PlayerID turnBeginValue = PlayerID::PLAYER1;
 	PlayerID turn = PlayerID::NONE;
 
 	void addPlayer(PlayerID playerID, Player&& player);
