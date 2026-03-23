@@ -16,9 +16,9 @@ bool Player::isComputer()
 	return Player::type == PlayerType::COMPUTER ? true : false;
 }
 
-FieldType Player::getPlayerFieldType()
+PlayerID Player::getPlayerID()
 {
-	return playerFieldType;
+	return playerID;
 }
 
 MinimaxRole Player::getMinimaxRole()
@@ -31,15 +31,15 @@ WinningDetection Player::getWinningDetection()
 	return winningDetection;
 }
 
-Player::Player(FieldType playerFieldType, PlayerType type, MinimaxRole minimaxRole, WinningDetection winningDetection)
+Player::Player(PlayerID playerID, PlayerType type, MinimaxRole minimaxRole, WinningDetection winningDetection)
 {
-	if ((playerFieldType != FieldType::PLAYER1) && (playerFieldType != FieldType::PLAYER2))
+	if ((playerID != PlayerID::PLAYER1) && (playerID != PlayerID::PLAYER2))
 	{
 		throw std::exception("Player cannot be EMPTY!");
 	}
 	else
 	{
-		this->playerFieldType = playerFieldType;
+		this->playerID = playerID;
 		this->type = type;
 		this->minimaxRole = minimaxRole;
 		this->winningDetection = winningDetection;
@@ -72,14 +72,14 @@ namespace PlayerAI
 		int8_t move8 = -1;
 
 
-		if (PlayerAI::stopWin(field, player.getPlayerFieldType(), player.getMinimaxRole(), player.getWinningDetection()) != -1)
+		if (PlayerAI::stopWin(field, player.getPlayerID(), player.getMinimaxRole(), player.getWinningDetection()) != -1)
 		{
-			move8 = PlayerAI::stopWin(field, player.getPlayerFieldType(), player.getMinimaxRole(), player.getWinningDetection());
+			move8 = PlayerAI::stopWin(field, player.getPlayerID(), player.getMinimaxRole(), player.getWinningDetection());
 			best = 100;
 		}
-		else if (PlayerAI::stopWin(field, !player.getPlayerFieldType(), player.getMinimaxRole(), player.getWinningDetection()) != -1)
+		else if (PlayerAI::stopWin(field, !player.getPlayerID(), player.getMinimaxRole(), player.getWinningDetection()) != -1)
 		{
-			move8 = PlayerAI::stopWin(field, !player.getPlayerFieldType(), player.getMinimaxRole(), player.getWinningDetection());
+			move8 = PlayerAI::stopWin(field, !player.getPlayerID(), player.getMinimaxRole(), player.getWinningDetection());
 			best = 100;
 		}
 
@@ -87,9 +87,9 @@ namespace PlayerAI
 		{
 			if (field.empty(i))
 			{
-				field.setPlayAt(i, player.getPlayerFieldType());
+				field.setPlayAt(i, player.getPlayerID());
 
-				int move = PlayerAI::minimax(field, player.getPlayerFieldType(), player.getPlayerFieldType(), player.getMinimaxRole(), 0);
+				int move = PlayerAI::minimax(field, player.getPlayerID(), player.getPlayerID(), player.getMinimaxRole(), 0);
 
 				field.unsetPlayAt(i);
 
@@ -143,16 +143,16 @@ namespace PlayerAI
 		return move8;
 	}
 
-	int minimax(Field& field, FieldType origFieldType, FieldType plFieldType, MinimaxRole minimaxRole, const int& depth)
+	int minimax(Field& field, PlayerID origPlayerID, PlayerID plPlayerID, MinimaxRole minimaxRole, const int& depth)
 	{
 
 		GameStatus gameStatus = LocalEngine::detectWinner(field);
 
-		if (gameStatus == origFieldType)
+		if (gameStatus == origPlayerID)
 		{
 			return 10 - depth;
 		}
-		else if (gameStatus == !origFieldType)
+		else if (gameStatus == !origPlayerID)
 		{
 			return -10;
 		}
@@ -169,9 +169,9 @@ namespace PlayerAI
 			{
 				if (field.empty(i))
 				{
-					field.setPlayAt(i, plFieldType);
+					field.setPlayAt(i, plPlayerID);
 
-					best = std::max(best, minimax(field, origFieldType, !plFieldType, !minimaxRole, depth + 1));
+					best = std::max(best, minimax(field, origPlayerID, !plPlayerID, !minimaxRole, depth + 1));
 
 					field.unsetPlayAt(i);
 				}
@@ -186,9 +186,9 @@ namespace PlayerAI
 			{
 				if (field.empty(i))
 				{
-					field.setPlayAt(i, plFieldType);
+					field.setPlayAt(i, plPlayerID);
 
-					best = std::min(best, PlayerAI::minimax(field, origFieldType, !plFieldType, !minimaxRole, depth + 1));
+					best = std::min(best, PlayerAI::minimax(field, origPlayerID, !plPlayerID, !minimaxRole, depth + 1));
 
 					field.unsetPlayAt(i);
 				}
@@ -198,7 +198,7 @@ namespace PlayerAI
 		return 0;
 	}
 
-	int stopWin(Field& origField, FieldType plFieldType, MinimaxRole minimaxRole, WinningDetection winningDetection)
+	int stopWin(Field& origField, PlayerID plPlayerID, MinimaxRole minimaxRole, WinningDetection winningDetection)
 	{
 		if (winningDetection == WinningDetection::DISABLED)
 		{
@@ -213,26 +213,26 @@ namespace PlayerAI
 			{
 				if (minimaxRole == MinimaxRole::MIN)
 				{
-					field.setPlayAt(i, !plFieldType);
+					field.setPlayAt(i, !plPlayerID);
 
 					GameStatus gameStatus = LocalEngine::detectWinner(field);
 
 					field.unsetPlayAt(i);
 
-					if (gameStatus == !plFieldType)
+					if (gameStatus == !plPlayerID)
 					{
 						return i;
 					}
 				}
 				else if (minimaxRole == MinimaxRole::MAX)
 				{
-					field.setPlayAt(i, plFieldType);
+					field.setPlayAt(i, plPlayerID);
 
 					GameStatus gameStatus = LocalEngine::detectWinner(field);
 
 					field.unsetPlayAt(i);
 
-					if (gameStatus == plFieldType)
+					if (gameStatus == plPlayerID)
 					{
 						return i;
 					}

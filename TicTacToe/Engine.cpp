@@ -26,14 +26,14 @@ bool LocalEngine::launchGame()
 
     callbacks.onUpdate(*this);
 
-    turn = PlayerID::PLAYER1; /* Player order is here changeable */
+    turn = turnBeginValue; /* Player order is here changeable */
     while (getStatus().isUnfinished())
     {
         if (getPlayer(turn).isComputer())
         {
             int8_t targetField = PlayerAI::minimax(this->field, getPlayer(turn));
             callbacks.onNonInteractiveTurn(*this);
-            this->field.setPlayAt(targetField, getPlayer(turn).getPlayerFieldType());
+            this->field.setPlayAt(targetField, getPlayer(turn).getPlayerID());
         }
         else
         {
@@ -47,7 +47,7 @@ bool LocalEngine::launchGame()
                     inputValid = true;
                 firstTry = false;
             }
-            this->field.setPlayAt(input, getPlayer(turn).getPlayerFieldType());
+            this->field.setPlayAt(input, getPlayer(turn).getPlayerID());
         }
         callbacks.onUpdate(*this);
         turn = !turn;
@@ -75,6 +75,8 @@ bool LocalEngine::sendSettings(const EngineConfig& engineConfig)
     this->symbolMap.emplace(localEngineConfig->playerSymbols.o, Symbol::O);
     this->difficulty = localEngineConfig->difficulty;
     this->gameType = localEngineConfig->gameType;
+    if(localEngineConfig->firstPlayer != PlayerID::NONE)
+        this->turnBeginValue = localEngineConfig->firstPlayer;
 
     /* Populate playerlist */
     flushPlayerlist();
@@ -100,16 +102,16 @@ bool LocalEngine::sendSettings(const EngineConfig& engineConfig)
     switch (this->gameType)
     {
     case GameType::PvP:
-        addPlayer(PlayerID::PLAYER1, Player(FieldType::PLAYER1, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
-        addPlayer(PlayerID::PLAYER2, Player(FieldType::PLAYER2, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
+        addPlayer(PlayerID::PLAYER1, Player(PlayerID::PLAYER1, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
+        addPlayer(PlayerID::PLAYER2, Player(PlayerID::PLAYER2, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
         break;
     case GameType::PvAI:
-        addPlayer(PlayerID::PLAYER1, Player(FieldType::PLAYER1, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
-        addPlayer(PlayerID::PLAYER2, Player(FieldType::PLAYER2, PlayerType::COMPUTER, role, wd));
+        addPlayer(PlayerID::PLAYER1, Player(PlayerID::PLAYER1, PlayerType::PLAYER, MinimaxRole::NOPART, WinningDetection::NONE));
+        addPlayer(PlayerID::PLAYER2, Player(PlayerID::PLAYER2, PlayerType::COMPUTER, role, wd));
         break;
     case GameType::AIvAI:
-        addPlayer(PlayerID::PLAYER1, Player(FieldType::PLAYER1, PlayerType::COMPUTER, role, wd));
-        addPlayer(PlayerID::PLAYER2, Player(FieldType::PLAYER2, PlayerType::COMPUTER, role, wd));
+        addPlayer(PlayerID::PLAYER1, Player(PlayerID::PLAYER1, PlayerType::COMPUTER, role, wd));
+        addPlayer(PlayerID::PLAYER2, Player(PlayerID::PLAYER2, PlayerType::COMPUTER, role, wd));
         break;
     default:
         break;
@@ -179,17 +181,17 @@ GameStatus LocalEngine::detectWinner(Field& field)
     for (int i = 0; i < 2; i++)
     {
 
-        FieldType scanningItem = i == 0 ? FieldType::PLAYER1 : FieldType::PLAYER2;
+        PlayerID scanningItem = i == 0 ? PlayerID::PLAYER1 : PlayerID::PLAYER2;
 
         for (int h = 0; h < 8; h++)
         {
             if (field.getPlayAt(testingValues[h][0]) == scanningItem && field.getPlayAt(testingValues[h][1]) == scanningItem && field.getPlayAt(testingValues[h][2]) == scanningItem)
             {
-                if (scanningItem == FieldType::PLAYER1)
+                if (scanningItem == PlayerID::PLAYER1)
                 {
                     return GameStatus(GameStatus::GameResult::PLAYER1);
                 }
-                else if (scanningItem == FieldType::PLAYER2)
+                else if (scanningItem == PlayerID::PLAYER2)
                 {
                     return GameStatus(GameStatus::GameResult::PLAYER2);
                 }
@@ -207,18 +209,6 @@ GameStatus LocalEngine::detectWinner(Field& field)
 void LocalEngine::updateGameStatus() {
     gameStatus = detectWinner(field);
 }
-GameStatus::operator FieldType() const
-{
-    switch (result)
-    {
-    case GameStatus::GameResult::PLAYER1:
-        return FieldType::PLAYER1;
-    case GameStatus::GameResult::PLAYER2:
-        return FieldType::PLAYER2;
-    default:
-        return FieldType::EMPTY;
-    }
-}
 
 GameStatus::operator PlayerID() const
 {
@@ -229,7 +219,7 @@ GameStatus::operator PlayerID() const
     case GameStatus::GameResult::PLAYER2:
         return PlayerID::PLAYER2;
     default:
-        throw std::exception();
+        return PlayerID::NONE;
     }
 }
 

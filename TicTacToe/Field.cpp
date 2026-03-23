@@ -1,34 +1,34 @@
 #include <array>
 #include "Field.h"
 
-void Field::setPlayAt(int pos, enum FieldType fieldType)
+void Field::setPlayAt(int pos, PlayerID playerID)
 {
 	if (pos > 8 || pos < 0) 
 	{
-		throw FieldIOException(pos, fieldType);
+		throw FieldIOException(pos, playerID);
 	}
 
-	FieldType playAt = this->getPlayAt(pos);
+	PlayerID playAt = this->getPlayAt(pos);
 
-	if (playAt != FieldType::EMPTY)
+	if (playAt != PlayerID::NONE)
 	{
-		throw FieldIOException(pos, fieldType);
+		throw FieldIOException(pos, playerID);
 	}
 
-	Field::field.at(pos) = fieldType;
+	Field::field.at(pos) = playerID;
 }
 
 void Field::unsetPlayAt(int pos)
 {
 	if (pos > 8 || pos < 0)
 	{
-		throw FieldIOException(pos, FieldType::EMPTY);
+		throw FieldIOException(pos, PlayerID::NONE);
 	}
 
-	Field::field.at(pos) = FieldType::EMPTY;
+	Field::field.at(pos) = PlayerID::NONE;
 }
 
-enum FieldType Field::getPlayAt(int pos)
+PlayerID Field::getPlayAt(int pos)
 {
 	if (pos < 9 && pos >= 0) 
 	{
@@ -36,7 +36,7 @@ enum FieldType Field::getPlayAt(int pos)
 	}
 	else
 	{
-		return FieldType::EMPTY;
+		throw FieldIOException(pos, PlayerID::NONE);
 	}
 }
 
@@ -47,7 +47,7 @@ Field::Field()
 
 bool Field::empty(int pos)
 {
-	if (this->getPlayAt(pos) == FieldType::EMPTY)
+	if (this->getPlayAt(pos) == PlayerID::NONE)
 	{
 		return true;
 	}
@@ -61,7 +61,7 @@ bool Field::reset()
 {
 	for(int i = 0; i < Field::field.size(); i++)
 	{
-		Field::field.at(i) = FieldType::EMPTY;
+		Field::field.at(i) = PlayerID::NONE;
 	}
 	return true;
 }
@@ -70,9 +70,9 @@ int8_t Field::fullness()
 {
 	int8_t fullness = 0;
 
-	for (FieldType ftype : field)
+	for (PlayerID playerID : field)
 	{
-		if (ftype != FieldType::EMPTY)
+		if (playerID != PlayerID::NONE)
 		{
 			fullness++;
 		}
@@ -91,17 +91,4 @@ Field& Field::operator=(const Field& field)
 const char* FieldIOException::what() const throw()
 {
 	return msg.c_str();
-}
-
-FieldType operator!(const FieldType& fieldType)
-{
-	if (fieldType == FieldType::PLAYER1)
-	{
-		return FieldType::PLAYER2;
-	}
-	else if (fieldType == FieldType::PLAYER2)
-	{
-		return FieldType::PLAYER1;
-	}
-	return FieldType::EMPTY;
 }
