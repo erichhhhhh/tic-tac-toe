@@ -12,3 +12,7 @@ tictactoe
 
 # Logs
 *.log
+
+#Bear
+.cache/
+compile_commands.json
