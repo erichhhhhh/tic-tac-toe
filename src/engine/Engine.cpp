@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include <exception>
+#include <stdexcept>
 bool LocalEngine::checkSettings(const LocalEngineConfig& engineConfig)
 {
     if ((engineConfig.playerSymbols.x != PlayerID::PLAYER1 && engineConfig.playerSymbols.x != PlayerID::PLAYER2)
@@ -65,7 +65,7 @@ bool LocalEngine::sendSettings(const EngineConfig& engineConfig)
 
     if (!localEngineConfig || !checkSettings(*localEngineConfig))
     {
-        throw std::exception("Settings are invalid");
+        throw std::invalid_argument("Settings are invalid");
         return false;
     }
 
@@ -123,7 +123,7 @@ bool LocalEngine::sendSettings(const EngineConfig& engineConfig)
 Symbol LocalEngine::getSymbol(const PlayerID playerID)
 {
     if (playerID == PlayerID::NONE)
-        throw std::exception("Illegal SYMBOL retrieve: NONE has no SYMBOL");
+        throw std::invalid_argument("Illegal SYMBOL retrieve: NONE has no SYMBOL");
 
     return symbolMap.at(playerID);
 }

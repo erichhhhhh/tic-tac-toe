@@ -34,7 +34,7 @@ std::string table(IEngine& engine);
 
 void printError(std::string exception);
 
-void pause();
+void UI_pause();
 
 void clear();
 

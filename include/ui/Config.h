@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
-#include <sstream>
+#include <memory>
 #include <vector>
 #include <exception>
 
@@ -30,7 +30,7 @@ namespace Config
 		Path(std::string directory, std::string filename);
 	private:
 		static std::string getDir(int id);
-		static std::map <enum ConfigFiles, Path> unspecified_paths;
+		static std::map <ConfigFiles, Path> unspecified_paths;
 		static std::map <ConfigFiles, std::pair<Path, std::string>> specified_paths;
 	};
 
@@ -80,8 +80,8 @@ namespace Config
 		bool serialize() override;
 		bool deserialize() override;
 
-		enum class Symbol getPreferedSymbol() const{ return preferedSymbol; }
-		void setPreferedSymbol(const enum class Symbol& symbol) { preferedSymbol = symbol; }
+		Symbol getPreferedSymbol() const{ return preferedSymbol; }
+		void setPreferedSymbol(const Symbol& symbol) { preferedSymbol = symbol; }
 
 		GameType getGameType() const { return gameType; }
 		void setGameType(const GameType& type) { gameType = type; }
@@ -99,8 +99,8 @@ namespace Config
 		bool areSettingsBeforeGameShown() const { return showSettingsBeforeGame; }
 		void setIfSettingsAreShownBeforeGame(const bool& param) { showSettingsBeforeGame = param; }
 
-		enum class Difficulty getDifficulty() const { return difficulty; }
-		void setDifficulty(const enum class Difficulty& diff) { difficulty = diff; }
+		Difficulty getDifficulty() const { return difficulty; }
+		void setDifficulty(const Difficulty& diff) { difficulty = diff; }
 
 		std::string getLanguage() const { return language; }
 		bool setLanguage(std::string language);
@@ -110,13 +110,13 @@ namespace Config
 		Config& operator=(const Config& config);
 
 	private:
-		enum Symbol preferedSymbol = Symbol::X;
-		enum GameType gameType = GameType::PvAI;
+		Symbol preferedSymbol = Symbol::X;
+		GameType gameType = GameType::PvAI;
 		bool enforceSymbol = false;
 
 		PlayerID firstPlayer = PlayerID::PLAYER1;
 		bool showSettingsBeforeGame = true;
-		enum class Difficulty difficulty = Difficulty::HARD;
+		Difficulty difficulty = Difficulty::HARD;
 		std::string language = "en-US";
 
 	};

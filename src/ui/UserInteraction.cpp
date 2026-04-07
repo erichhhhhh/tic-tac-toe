@@ -1,6 +1,9 @@
 ﻿#include "UserInteraction.h"
 
 #include <iostream>
+#include <numeric>
+#include <stdexcept>
+#include <unistd.h>
 #include <vector>
 #include <string>
 #include <format>
@@ -72,6 +75,16 @@ void languageSettings(Config::Config& config)
 
 void mainMenu(bool playDisabled, Config::Config& config)
 {
+	if(isatty(STDIN_FILENO))
+	{
+		rang::setControlMode(rang::control::Force);
+	}
+	else
+	{
+		rang::setControlMode(rang::control::Off);
+	}
+
+
 	bool abort = false;
 	while (!abort)
 	{
@@ -115,7 +128,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 				if (playDisabled)
 				{
 					std::cout << rang::fgB::red << Config::Language::getTranslation("title.play_disabled.error") << rang::style::reset << std::endl;
-					pause();
+					UI_pause();
 				}
 				else
 				{
@@ -142,7 +155,7 @@ void mainMenu(bool playDisabled, Config::Config& config)
 					else if (ipt == 2)
 					{
 						std::cout << "Not implemented" << std::endl;
-						pause();
+						UI_pause();
 						//Online game init code here
 					}
 				}
@@ -228,7 +241,7 @@ void launchGame(Config::Config& config, Connectivity connectivity)
 		{
 			updateField(engine);
 			std::cout << Config::Language::getTranslation("game.computers_turn") << std::endl;
-			pause();
+			UI_pause();
 		};
 	try
 	{
@@ -242,7 +255,7 @@ void launchGame(Config::Config& config, Connectivity connectivity)
 	engine->launchGame();
 
 	updateField(*engine, true);
-	pause();
+	UI_pause();
 }
 
 std::string printWinningMessage(IEngine& engine)
@@ -251,7 +264,7 @@ std::string printWinningMessage(IEngine& engine)
 
 	if (gameStatus.isUnfinished())
 	{
-		throw std::exception("Game was unfinished");
+		throw std::invalid_argument("Game was unfinished");
 	}
 	else if (gameStatus.isDraw())
 	{
@@ -273,7 +286,7 @@ std::string printWinningMessage(IEngine& engine)
 	}
 	else
 	{
-		throw std::exception("Enum could not be compared");
+		throw std::invalid_argument("Enum could not be compared");
 	}
 
 }
@@ -398,7 +411,7 @@ void settings(Config::Config& config, const bool& areTempSettings)
 		case 9:
 			if (areTempSettings)
 			{
-				throw std::exception("Start aborted");
+				throw std::runtime_error("Start aborted");
 				break;
 			}
 			else
@@ -454,9 +467,9 @@ std::string table(IEngine& engine)
 
 	std::cout.rdbuf(sstreamBuf);
 
-	std::cout <<	"\u00DA\u00C4\u00C4\u00C4"
-					"\u00C2\u00C4\u00C4\u00C4"
-					"\u00C2\u00C4\u00C4\u00C4\u00BF\n";
+	std::cout <<	"\u250C\u2500\u2500\u2500"
+					"\u252C\u2500\u2500\u2500"
+					"\u252C\u2500\u2500\u2500\u2510\n";
 
 	for (int i = 0; i < xandosString.size(); i++)
 	{
@@ -468,27 +481,27 @@ std::string table(IEngine& engine)
 
 		if (i % 3 == 2 && i != 0)
 		{
-			std::cout << " " << fg << xandosString.at(i) << rang::fg::reset << " \u00B3";
+			std::cout << " " << fg << xandosString.at(i) << rang::fg::reset << " \u2502";
 			if (i != 8)
 			{
-				std::cout <<	"\n\u00C3\u00C4\u00C4\u00C4"
-								"\u00C5\u00C4\u00C4\u00C4"
-								"\u00C5\u00C4\u00C4\u00C4\u00B4\n";
+				std::cout <<	"\n\u251C\u2500\u2500\u2500"
+								"\u253C\u2500\u2500\u2500"
+								"\u253C\u2500\u2500\u2500\u2524\n";
 			}
 		}
 		else if (i % 3 == 0)
 		{
-			std::cout << "\u00B3 " << fg << xandosString.at(i) << rang::fg::reset << " \u00B3";
+			std::cout << "\u2502 " << fg << xandosString.at(i) << rang::fg::reset << " \u2502";
 		}
 		else
 		{
-			std::cout << " " << fg << xandosString.at(i) << rang::fg::reset << " \u00B3";
+			std::cout << " " << fg << xandosString.at(i) << rang::fg::reset << " \u2502";
 		}
 	}
 
-	std::cout <<	"\n\u00C0\u00C4\u00C4\u00C4"
-					"\u00C1\u00C4\u00C4\u00C4"
-					"\u00C1\u00C4\u00C4\u00C4\u00D9\n";
+	std::cout <<	"\n\u2514\u2500\u2500\u2500"
+					"\u2534\u2500\u2500\u2500"
+					"\u2534\u2500\u2500\u2500\u2518\n";
 
 	std::cout.rdbuf(backup);
 
@@ -501,10 +514,10 @@ void printError(std::string exception)
 	std::cout << rang::fg::red << rang::style::bold << tictactoe_title << rang::style::reset << std::endl;
 	std::cout << "There was an exception whilst running the program" << std::endl << std::endl;
 	std::cout << rang::style::bold << exception << rang::style::reset << std::endl;
-	pause();
+	UI_pause();
 }
 
-void pause()
+void UI_pause()
 {
 	std::cout << Config::Language::getTranslation("misc.enter") << std::endl;
 	std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');

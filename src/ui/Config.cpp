@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <fstream>
 #include <tuple>
-#include <ShlObj.h>
 #include <json/json.h>
 
 #define VERSION 2
@@ -57,26 +56,28 @@ namespace Config
     };
 
 #else
-    std::map<enum ConfigFiles, AbstractConfig::Path> AbstractConfig::Path::unspecified_paths =
+    std::map<enum ConfigFiles, Path> Path::unspecified_paths =
     {
-        std::pair <enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::GeneralConfig, AbstractConfig::Path("", "/config.json")),
-        std::pair<enum ConfigFiles, AbstractConfig::Path>(ConfigFiles::Serverlist, AbstractConfig::Path("", "/serverlist.json"))
+	std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
+        std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(".", "/config.json")),
+        std::pair<enum ConfigFiles, Path>(ConfigFiles::Serverlist, Path(".", "/serverlist.json"))
     };
 
-    std::map<ConfigFiles, std::pair<AbstractConfig::Path, std::string>> AbstractConfig::Path::specified_paths =
+    std::map<ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
     {
-        std::pair<ConfigFiles, std::pair<AbstractConfig::Path, std::string>>
+        std::pair<ConfigFiles, std::pair<Path, std::string>>
         (
             ConfigFiles::LanguageFile,
-            std::pair<AbstractConfig::Path, std::string>(AbstractConfig::Path("" + "language\\", ""), ".json")
+            std::pair<Path, std::string>(Path("language/", ""), ".json")
         )
     };
 
 #endif
 
-#ifdef _WIN32
+
     std::string Path::getDir(int id)
     {
+#ifdef _WIN32
         LPWSTR strPath = new WCHAR[2048];
         SHGetSpecialFolderPath(0, strPath, id, FALSE);
         std::wstring ws_temp(strPath);

@@ -1,3 +1,4 @@
+#include <stdexcept>
 #define NOMINMAX
 
 #include <iostream>
@@ -35,7 +36,7 @@ Player::Player(PlayerID playerID, PlayerType type, MinimaxRole minimaxRole, Winn
 {
 	if ((playerID != PlayerID::PLAYER1) && (playerID != PlayerID::PLAYER2))
 	{
-		throw std::exception("Player cannot be EMPTY!");
+		throw std::invalid_argument("Player cannot be EMPTY!");
 	}
 	else
 	{
