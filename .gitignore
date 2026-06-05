@@ -16,3 +16,6 @@ tictactoe
 #Bear
 .cache/
 compile_commands.json
+
+# VSCode
+.vscode/

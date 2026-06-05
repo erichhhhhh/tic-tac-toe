@@ -1,1 +1,2 @@
 g++ -std=c++20 -Iinclude -Iinclude/engine -Iinclude/ui src/*/*.cpp -Iexternal/jsoncpp/include -Iexternal/rang/include external/jsoncpp/src/lib_json/*.cpp -g -o build/tictactoe
+cp -r res/* build/language/
