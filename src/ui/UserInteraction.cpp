@@ -11,6 +11,12 @@
 
 #include <rang.hpp>
 
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/component/captured_mouse.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/component_options.hpp>
+
+#include "Config.h"
 #include "Menu.h"
 
 
@@ -23,8 +29,8 @@ void languageSettings(Config::Config& config)
 {
 	std::vector<Config::Language> langlist = Config::Language::getLanguageList();
 
-#ifdef _ADHSUID
-	for (size_t i = 0; i < 3; i++)
+#ifndef _ADHSUID
+	for (size_t i = 0; i < 5; i++)
 	{
 		langlist.insert(langlist.end(), langlist.begin(), langlist.end());
 	}
@@ -41,7 +47,7 @@ void languageSettings(Config::Config& config)
 			std::cout << outputTitle << "\n" << std::endl;
 			for (size_t j = 0; j < 10 && (langlist.size() - i) > j; j++)
 			{
-				size_t target = i * 10 + j;
+				size_t target = i + j;
 				std::string targetString = std::to_string(target+1);
 				std::string displayName = langlist.at(target).getDisplayName();
 				std::string region = langlist.at(target).getRegion();

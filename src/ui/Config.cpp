@@ -60,7 +60,8 @@ namespace Config
     {
 	std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
         std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(".", "/config.json")),
-        std::pair<enum ConfigFiles, Path>(ConfigFiles::Serverlist, Path(".", "/serverlist.json"))
+        std::pair<enum ConfigFiles, Path>(ConfigFiles::Serverlist, Path(".", "/serverlist.json")),
+	std::pair<enum ConfigFiles, Path>(ConfigFiles::LanguageFile, Path("language/", ""))
     };
 
     std::map<ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
