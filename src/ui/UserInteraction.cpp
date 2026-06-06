@@ -14,7 +14,8 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/component/captured_mouse.hpp>
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/component_options.hpp>
+#include <ftxui/component/component_base.hpp>
+#include <ftxui/dom/elements.hpp>
 
 #include "Config.h"
 #include "Menu.h"
@@ -27,56 +28,39 @@ std::string buildOutput(std::string str, auto&&... args)
 
 void languageSettings(Config::Config& config)
 {
-	std::vector<Config::Language> langlist = Config::Language::getLanguageList();
+	clear();
+	auto screen = ftxui::ScreenInteractive::TerminalOutput();
 
-#ifndef _ADHSUID
-	for (size_t i = 0; i < 5; i++)
+	std::vector<Config::Language> langlist = Config::Language::getLanguageList();
+	std::vector<std::string> menuEntries;
+
+	int selected = 0;
+
+	for(size_t i = 0; i < langlist.size(); i++)
 	{
-		langlist.insert(langlist.end(), langlist.begin(), langlist.end());
-	}
-#endif
-	while (true)
-	{
-		for (size_t i = 0; i < langlist.size(); i += 10)
+		menuEntries.push_back(buildOutput(Config::Language::getTranslation("settings.language.entry"),  
+					langlist.at(i).getDisplayName(),
+					langlist.at(i).getRegion()));
+
+		if(langlist.at(i).getFilename() == config.getLanguage())
 		{
-			clear();
-			std::string titleTranslation = Config::Language::getTranslation("settings.language.title");
-			size_t page = (i / 10) + 1;
-			size_t allPages = ((langlist.size() / 10) + ((langlist.size() % 10 > 0) ? 1 : 0));
-			std::string outputTitle = std::vformat(titleTranslation, std::make_format_args(page, allPages));
-			std::cout << outputTitle << "\n" << std::endl;
-			for (size_t j = 0; j < 10 && (langlist.size() - i) > j; j++)
-			{
-				size_t target = i + j;
-				std::string targetString = std::to_string(target+1);
-				std::string displayName = langlist.at(target).getDisplayName();
-				std::string region = langlist.at(target).getRegion();
-				std::string output = buildOutput(Config::Language::getTranslation("settings.language.entry"), targetString, displayName, region);
-				if (langlist.at(target).getFilename() == config.getLanguage())
-				{
-					std::cout << rang::style::bold << output << rang::style::reset << std::endl;
-				}
-				else
-				{
-					std::cout << output << std::endl;
-				}
-			}
-			std::cout << Config::Language::getTranslation("settings.language.exit") << std::endl;
-			if (allPages > 1)
-				std::cout << Config::Language::getTranslation("settings.language.scroll") << std::endl;
-			int input = numericInput<int>();
-			if (input == 0)
-			{
-				return;
-			}
-			try
-			{
-				config.setLanguage(langlist.at(input-1 + i * 10).getFilename());
-				return;
-			}
-			catch(std::exception e) {}
+			selected = i;
 		}
 	}
+
+	ftxui::MenuOption option;
+	option.on_enter = screen.ExitLoopClosure();
+	auto menu = ftxui::Menu(&menuEntries, &selected, option);
+
+	auto renderer = ftxui::Renderer(menu, [&] {
+		return ftxui::vbox({ftxui::text(Config::Language::getTranslation("settings.language.title")), menu->Render()});
+	});
+
+	screen.Loop(renderer);
+
+	if(!config.setLanguage(langlist.at(selected).getFilename()))
+		languageSettings(config);
+	return;
 }
 
 void mainMenu(bool playDisabled, Config::Config& config)

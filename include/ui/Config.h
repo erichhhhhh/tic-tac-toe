@@ -144,7 +144,6 @@ namespace Config
 		bool serialize() override { return false; }
 
 		Language(std::string name);
-		std::string maskPhrases(std::string phrases);
 
 		static void loadLanguageList();
 

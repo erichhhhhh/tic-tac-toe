@@ -227,21 +227,6 @@ namespace Config
 
     }
 
-    std::string Language::maskPhrases(std::string phrase)
-    {
-        for (int i = 0; i < static_cast<int>(phrase.size()) - 1; i++)
-        {
-            std::string codepoint = phrase.substr(i, 2);
-
-            if (maskedCharacter.find(codepoint) != maskedCharacter.end())
-            {
-                phrase = phrase.substr(0, i) + maskedCharacter.at(codepoint) + phrase.substr(i + 2);
-            }
-        }
-        
-        return phrase;
-    }
-
     bool Language::deserialize()
     {
         std::ifstream input(path.getPath() + ".json");
@@ -269,22 +254,15 @@ namespace Config
             return false;
         }
 
-        filename = maskPhrases(object["filename"].asString());
-        displayName = maskPhrases(object["displayName"].asString());
-        region = maskPhrases(object["region"].asString());
-
-        const Json::Value& maskedCharsJSON = object["maskedCharacters"];
-        for (Json::Value::ArrayIndex i = 0; i < maskedCharsJSON.size(); i++)
-        {
-            const Json::Value& maskedChar = maskedCharsJSON[i];
-            maskedCharacter.insert(std::pair<std::string, char> (maskedChar[0].asString(), static_cast<char>((maskedChar[1].asInt()))));
-        }
+        filename = object["filename"].asString();
+        displayName = object["displayName"].asString();
+        region = object["region"].asString();
 
         const Json::Value& translationsJSON = object["translations"];
         for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
         {
             const Json::Value& translation = translationsJSON[i];
-            translations.insert(std::pair<std::string, std::string>(translation[0].asString(), maskPhrases(translation[1].asString())));
+            translations.insert(std::pair<std::string, std::string>(translation[0].asString(), translation[1].asString()));
         }
 
         return true;

@@ -33,10 +33,9 @@
     [ "settings.settings_before_game", "\t5) Parameter vor\n\t   Spielbeginn\t\t[{}] (Wenn aktiviert, werden vor jedem Spiel die Einstellungen gezeigt)\n" ],
     [ "settings.difficulty", "\t6) Schwierigkeitsgrad\t[{}]\n" ],
     [ "settings.language", "\t7) Spracheinstellungen\n" ],
-    [ "settings.language.title", "Sprache auswählen (Seite {0}/{1}):"],
-    [ "settings.language.entry", "{0})\t{1} ({2})" ],
-    [ "settings.language.scroll", "Drücke EINGABE (ENTER), um Seiten zu wechseln" ],
-    [ "settings.language.exit", "0)\tZurück ohne zu speichern" ],
+    [ "settings.language.title", "Sprache auswählen:"],
+    [ "settings.language.entry", "{0} ({1})" ],
+    [ "settings.language.exit", "Speichern und Zurück" ],
     [ "settings.difficulty.easy", "Einfach" ],
     [ "settings.difficulty.medium", "Mittel" ],
     [ "settings.difficulty.hard", "Schwer" ],
@@ -45,14 +44,5 @@
     [ "settings.save_settings", "\t0) Einstellungen speichern" ],
     [ "misc.enter", "Mit Eingabe (ENTER) fortsetzen ..." ],
     [ "misc.wrong_input", "Eingabe gescheitert, bitte erneut versuchen" ]
-  ],
-  "maskedCharacters": [
-    [ "ä", 132 ],
-    [ "Ä", 142 ],
-    [ "ö", 148 ],
-    [ "Ö", 153 ],
-    [ "ü", 129 ],
-    [ "Ü", 154 ],
-    [ "ß", 225 ]
   ]
 }
