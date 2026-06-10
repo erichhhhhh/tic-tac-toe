@@ -6,6 +6,8 @@
 #include <exception>
 #include <string>
 
+#include <ftxui/component/screen_interactive.hpp>
+
 #include "Config.h"
 #include "Engine.h"
 
@@ -20,11 +22,47 @@ inline std::string tictactoe_title =
 "    \\_/  |_| \\___|\\_/ \\__,_| \\___|\\_/ \\___/  \\___| \n"
 "                                                   ";
 
+enum class Settings
+{
+	Symbol,
+	GameType,
+	EnforceSymbol,
+	FirstPlayer,
+	Difficulty,
+	SettingsBeforeGame,
+	Language,
+	AbortGame,
+	StartGame,
+	SaveSettings
+};
+
+enum class MainMenu 
+{
+	SinglePlayer,
+	MultiPlayer,
+	Settings,
+	Exit
+};
+
+struct SettingsMenuEntry 
+{
+	Settings setting;
+	std::string text;
+};
+
+struct MainMenuEntry 
+{
+	MainMenu mainMenu;
+	std::string text;
+};
+
+void languageSettings(Config::Config& config);
+
 void mainMenu(bool playDisabled, Config::Config& config);
 
 void launchGame(Config::Config& config, Connectivity connectivity);
 
-void settings(Config::Config& config, const bool& areTempSettings);
+bool settings(Config::Config& config, const bool& areTempSettings);
 
 void updateField(IEngine& engine, bool finished = false);
 

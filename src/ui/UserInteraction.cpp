@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <numeric>
+#include <ranges>
 #include <stdexcept>
 #include <unistd.h>
 #include <vector>
@@ -26,26 +27,75 @@ std::string buildOutput(std::string str, auto&&... args)
 	return std::vformat(str, std::make_format_args(args...));
 }
 
+std::vector<std::string> refreshSettingsEntry(std::vector<SettingsMenuEntry>& menuEntries, Config::Config& config, bool areTempSettings)
+{
+	menuEntries.clear();
+	std::string symbolP1 = ((config.getPreferedSymbol() == Symbol::X) ? 
+			Config::Language::getTranslation("symbol.X") :
+			Config::Language::getTranslation("symbol.O"));
+	std::string symbolP2 = ((config.getPreferedSymbol() != Symbol::X) 
+			? Config::Language::getTranslation("symbol.X") 
+			: Config::Language::getTranslation("symbol.O"));
+	std::string playerAmount = ((config.getGameType() == GameType::AIvAI) ? 
+			Config::Language::getTranslation("settings.player_amount.computer_only") : 
+			(config.getGameType() == GameType::PvAI) ?
+			Config::Language::getTranslation("settings.player_amount.computer_and_player") : 
+			Config::Language::getTranslation("settings.player_amount.player_only"));
+	std::string isSymbolEnforced = (config.isSymbolEnforced() ?
+			Config::Language::getTranslation("settings.yes") :
+			Config::Language::getTranslation("settings.no"));
+	std::string firstPlayer = ((config.getFirstPlayer() == PlayerID::PLAYER1) ?
+			Config::Language::getTranslation("settings.yes") :
+			Config::Language::getTranslation("settings.no"));
+	std::string difficulty = ((config.getDifficulty() == Difficulty::EASY)
+			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Difficulty::MIDDLE)
+			? Config::Language::getTranslation("settings.difficulty.medium") : Config::Language::getTranslation("settings.difficulty.hard"));
+
+	menuEntries = {
+		{Settings::Symbol, buildOutput(Config::Language::getTranslation("settings.symbol"), symbolP1, symbolP2)},
+		{Settings::GameType, buildOutput(Config::Language::getTranslation("settings.player_amount"), playerAmount)},
+		{Settings::EnforceSymbol, buildOutput(Config::Language::getTranslation("settings.is_symbol_enforced"), isSymbolEnforced)},
+		{Settings::FirstPlayer, buildOutput(Config::Language::getTranslation("settings.first_player"), firstPlayer)},
+		{Settings::Difficulty, buildOutput(Config::Language::getTranslation("settings.difficulty"), difficulty)}
+	};
+
+	if(!areTempSettings)
+	{
+		std::string settingsBeforeGame = (config.areSettingsBeforeGameShown() ?
+				Config::Language::getTranslation("settings.yes") :
+				Config::Language::getTranslation("settings.no"));
+		menuEntries.push_back({Settings::SettingsBeforeGame, buildOutput(Config::Language::getTranslation("settings.settings_before_game"), settingsBeforeGame)});
+		menuEntries.push_back({Settings::Language, buildOutput(Config::Language::getTranslation("settings.language"))});
+		menuEntries.push_back({Settings::SaveSettings, buildOutput(Config::Language::getTranslation("settings.save_settings"))});
+	}
+	else 
+	{
+		menuEntries.push_back({Settings::AbortGame, buildOutput(Config::Language::getTranslation("settings.abort_game"))});
+		menuEntries.push_back({Settings::StartGame, buildOutput(Config::Language::getTranslation("settings.start_game"))});
+	}
+
+	std::vector<std::string> textMenuEntries;
+	for(SettingsMenuEntry entry : menuEntries)
+	{
+		textMenuEntries.push_back(entry.text);
+	}
+	return textMenuEntries;
+}
+
 void languageSettings(Config::Config& config)
 {
 	clear();
 	auto screen = ftxui::ScreenInteractive::TerminalOutput();
-
 	std::vector<Config::Language> langlist = Config::Language::getLanguageList();
 	std::vector<std::string> menuEntries;
 
 	int selected = 0;
 
-	for(size_t i = 0; i < langlist.size(); i++)
+	for(Config::Language language : langlist)
 	{
 		menuEntries.push_back(buildOutput(Config::Language::getTranslation("settings.language.entry"),  
-					langlist.at(i).getDisplayName(),
-					langlist.at(i).getRegion()));
-
-		if(langlist.at(i).getFilename() == config.getLanguage())
-		{
-			selected = i;
-		}
+					language.getDisplayName(),
+					language.getRegion()));
 	}
 
 	ftxui::MenuOption option;
@@ -58,13 +108,13 @@ void languageSettings(Config::Config& config)
 
 	screen.Loop(renderer);
 
-	if(!config.setLanguage(langlist.at(selected).getFilename()))
-		languageSettings(config);
+	config.setLanguage(langlist.at(selected).getFilename());
 	return;
 }
 
 void mainMenu(bool playDisabled, Config::Config& config)
 {
+	clear();
 	if(isatty(STDIN_FILENO))
 	{
 		rang::setControlMode(rang::control::Force);
@@ -74,10 +124,58 @@ void mainMenu(bool playDisabled, Config::Config& config)
 		rang::setControlMode(rang::control::Off);
 	}
 
-
 	bool abort = false;
 	while (!abort)
 	{
+		auto screen = ftxui::ScreenInteractive::TerminalOutput();
+		int selected = 0;
+
+
+		auto buildEntries = [&]() -> std::vector<MainMenuEntry>
+		{
+			if(!playDisabled)
+			{
+				return {
+					{MainMenu::SinglePlayer, Config::Language::getTranslation("title.play")},
+					{MainMenu::MultiPlayer, Config::Language::getTranslation("title.multiplayer")},
+					{MainMenu::Settings, Config::Language::getTranslation("title.settings")},
+					{MainMenu::Exit, Config::Language::getTranslation("title.exit")}
+				};
+			}
+			else 
+			{
+				return {
+					{MainMenu::Settings, Config::Language::getTranslation("title.settings")},
+					{MainMenu::Exit, Config::Language::getTranslation("title.exit")}
+				};
+			}		
+		};
+
+		auto menuEntries = buildEntries();
+
+		std::vector<std::string> textMenuEntries;
+
+		for (const MainMenuEntry& menuEntry : menuEntries)
+		{
+			textMenuEntries.push_back(menuEntry.text);
+		
+		}
+		
+		MainMenu selectedMainMenu = MainMenu::Exit;
+		ftxui::MenuOption option;
+		option.on_enter = [&] {
+			selectedMainMenu = menuEntries.at(selected).mainMenu;
+			screen.Exit();
+
+		};
+		auto menu = ftxui::Menu(&textMenuEntries, &selected, option);
+
+		auto renderer = ftxui::Renderer(menu, [&] {
+			return ftxui::vbox({ftxui::text(Config::Language::getTranslation("title.presentation")), ftxui::separator(), menu->Render()});
+		});
+
+		screen.Loop(renderer);
+		
 		if(playDisabled)
 		{
 			if (config.deserialize())
@@ -86,84 +184,35 @@ void mainMenu(bool playDisabled, Config::Config& config)
 			}
 		}
 
-		
-		std::vector<std::string> rawMenu = {
-			"title.presentation",
-			"title.title_art",
-			"title.play",
-			"title.multiplayer",
-			"title.settings",
-			"title.exit"
-		};
-
-		Menu mainmenu = Menu::rawMenu(rawMenu, MenuInput::FREEFIELD);
-
-		std::cout << mainmenu.render() << std::endl;
-
-		if (playDisabled)
-		{
-			std::cout
-				<< rang::style::bold
-				<< Config::Language::getTranslation("title.play_disabled") //"\nSpiel und Onlinespiel sind aufgrund fehlender Einstellungen deaktiviert.\nBitte hinterlege deine Pr\204ferenzen in den Einstellungen."
-				<< rang::style::reset
-				<< std::endl;
-		}
-
-		int ipt = numericInput<int>();
-
-		switch (ipt)
-		{
-			case 1: //Intenional fall-through
-			case 2:
-				if (playDisabled)
+		switch(selectedMainMenu)
+		{	
+			case MainMenu::SinglePlayer:
+				if (config.areSettingsBeforeGameShown())
 				{
-					std::cout << rang::fgB::red << Config::Language::getTranslation("title.play_disabled.error") << rang::style::reset << std::endl;
-					UI_pause();
+					Config::Config tmpConfig = config;
+					if(settings(tmpConfig, true))
+						launchGame(tmpConfig, Connectivity::LOCAL);
 				}
 				else
 				{
-					if (ipt == 1)
-					{
-						if (config.areSettingsBeforeGameShown())
-						{
-								Config::Config tmpConfig = config;
-								try
-								{
-									settings(tmpConfig, true);
-									launchGame(tmpConfig, Connectivity::LOCAL);
-								}
-								catch (std::exception e)
-								{
-									break;
-								}
-						}
-						else
-						{
-							launchGame(config, Connectivity::LOCAL);
-						}
-					}
-					else if (ipt == 2)
-					{
-						std::cout << "Not implemented" << std::endl;
-						UI_pause();
-						//Online game init code here
-					}
+					launchGame(config, Connectivity::LOCAL);
 				}
 				break;
-			case 3:
+			case MainMenu::MultiPlayer:
+				break;
+			case MainMenu::Settings:
 				settings(config, false);
 				break;
-			case 0:
+			case MainMenu::Exit:
 				abort = true;
-				return;
 				break;
-			default:
-				break;
+				
 		}
 
 		clear();
 	}
 }
+
 void updateField(IEngine& engine, bool finished)
 {
 	clear();
@@ -281,146 +330,76 @@ std::string printWinningMessage(IEngine& engine)
 
 }
 
-void settings(Config::Config& config, const bool& areTempSettings)
+bool settings(Config::Config& config, const bool& areTempSettings)
 {
 	clear();
-
+	auto screen = ftxui::ScreenInteractive::TerminalOutput();
 	std::string title = areTempSettings ? Config::Language::getTranslation("settings.temp_settings") : Config::Language::getTranslation("settings.settings"); // Spielparameter ; Standardeinstellungen
-	while (true)
+																				  //
+	int selected = 0;
+	bool returnValue = false;
+	std::vector<SettingsMenuEntry> menuEntries;
+	std::vector<std::string> textMenuEntries = refreshSettingsEntry(menuEntries, config, areTempSettings);
+	ftxui::MenuOption option;
+	option.on_enter = [&] {
+	Settings setting = menuEntries.at(selected).setting;
+
+	switch (setting)
 	{
-		std::string smbl = ((config.getPreferedSymbol() == Symbol::X) ? Config::Language::getTranslation("symbol.X") : Config::Language::getTranslation("symbol.O"));
-		std::string smbl2 = ((config.getPreferedSymbol() != Symbol::X) ? Config::Language::getTranslation("symbol.X") : Config::Language::getTranslation("symbol.O"));
-		std::string symbol = std::vformat(Config::Language::getTranslation("settings.symbol"),
-			std::make_format_args(smbl, smbl2));
-
-		std::cout
-			<< title
-			<< symbol
-			<< std::endl;
-
-		std::string plAmount = ((config.getGameType() == GameType::AIvAI) ? Config::Language::getTranslation("settings.player_amount.computer_only") : (config.getGameType() == GameType::PvAI) ? Config::Language::getTranslation("settings.player_amount.computer_and_player") : Config::Language::getTranslation("settings.player_amount.player_only"));
-		std::string playerAmount = std::vformat(Config::Language::getTranslation("settings.player_amount"), std::make_format_args(plAmount));
-		std::cout
-			<< playerAmount
-			<< std::endl;
-
-		std::string isSymbolEnfrcd = (config.isSymbolEnforced() ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
-		std::string isSymbolEnforced = std::vformat(Config::Language::getTranslation("settings.is_symbol_enforced"),
-			std::make_format_args(isSymbolEnfrcd));
-		std::cout
-			<< isSymbolEnforced
-			<< std::endl;
-
-		std::string fstPlayer = ((config.getFirstPlayer() == PlayerID::PLAYER1) ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
-		std::string firstPlayer = std::vformat(Config::Language::getTranslation("settings.first_player"),
-			std::make_format_args(fstPlayer));
-		std::cout
-			<< firstPlayer
-			<< std::endl;
-
-		if (!areTempSettings)
-		{
-			std::string sttngsBfrGm = (config.areSettingsBeforeGameShown() ? Config::Language::getTranslation("settings.yes") : Config::Language::getTranslation("settings.no"));
-			std::string settingsBeforeGame = std::vformat(Config::Language::getTranslation("settings.settings_before_game"),
-				std::make_format_args(sttngsBfrGm));
-			std::cout
-				<< settingsBeforeGame
-				<< std::endl;
-		}
-
-		std::string dffclty = ((config.getDifficulty() == Difficulty::EASY)
-			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Difficulty::MIDDLE)
-			? Config::Language::getTranslation("settings.difficulty.medium") : Config::Language::getTranslation("settings.difficulty.hard"));
-		std::string difficulty = std::vformat(Config::Language::getTranslation("settings.difficulty"),
-			std::make_format_args(dffclty));
-		std::cout
-			<< difficulty
-			<< std::endl;
-
-		if (!areTempSettings)
-		{
-			std::cout << Config::Language::getTranslation("settings.language") << std::endl;
-		}
-
-		if (areTempSettings)
-		{
-			std::cout
-				<< Config::Language::getTranslation("settings.abort_game")
-				<< std::endl;
-			std::cout
-				<< Config::Language::getTranslation("settings.start_game")
-				<< std::endl;
-		}
-		else
-		{
-			std::cout
-				<< Config::Language::getTranslation("settings.save_settings")
-				<< std::endl;
-		}
-
-		int input = numericInput<int>();
-
-		switch (input)
-		{
-		case 1:
+		case Settings::Symbol:
 			config.setPreferedSymbol((config.getPreferedSymbol() == Symbol::X) ? Symbol::O : Symbol::X);
 			break;
-		case 2:
+		case Settings::GameType:
 			config.setGameType((config.getGameType() == GameType::AIvAI) 
 				? GameType::PvAI : (config.getGameType() == GameType::PvAI) 
 				? GameType::PvP : (config.getGameType() == GameType::PvP) 
-				? GameType::AIvAI : GameType::AIvAI);
+				? GameType::AIvAI : GameType::AIvAI); 
 			break;
-		case 3:
+		case Settings::EnforceSymbol:
 			config.setIfSymbolEnforced(!config.isSymbolEnforced());
 			break;
-		case 4:
+		case Settings::FirstPlayer:
 			config.setFirstPlayer((config.getFirstPlayer() == PlayerID::PLAYER1) ? PlayerID::PLAYER2 : PlayerID::PLAYER1);
 			break;
-		case 5:
-			if (!areTempSettings)
-			{
-				config.setIfSettingsAreShownBeforeGame(!config.areSettingsBeforeGameShown());
-				break;
-			}
-			else
-			{
-				break;
-			}
-		case 6:
+		case Settings::SettingsBeforeGame:
+			config.setIfSettingsAreShownBeforeGame(!config.areSettingsBeforeGameShown());
+			break;
+		case Settings::Difficulty:
 			config.setDifficulty((config.getDifficulty() == Difficulty::EASY) 
 				? Difficulty::MIDDLE : (config.getDifficulty() == Difficulty::MIDDLE) 
 				? Difficulty::HARD : (config.getDifficulty() == Difficulty::HARD) 
 				? Difficulty::EASY : Difficulty::HARD);
 			break;
-		case 7:
-			if(!areTempSettings)
-				languageSettings(config);
-			title = Config::Language::getTranslation("settings.settings");
+		case Settings::Language:
+			languageSettings(config);
+			title = Config::Language::getTranslation("settings.settings"); // refreshSettingsEntry does not refresh this automatically
 			break;
-		case 9:
-			if (areTempSettings)
-			{
-				throw std::runtime_error("Start aborted");
-				break;
-			}
-			else
-			{
-				break;
-			}
-		case 0:
-			if (!areTempSettings)
-			{
-				config.serialize();
-			}
-			return;
+		case Settings::AbortGame:
+			screen.Exit();
+			returnValue = false;
+			break;
+		case Settings::StartGame:
+			screen.Exit();
+			returnValue = true;
+			break;
+		case Settings::SaveSettings:
+			returnValue = config.serialize();
+			screen.Exit();
 			break;
 		default:
+			returnValue = false;
 			break;
-		}
-
-		clear();
 	}
+	textMenuEntries = refreshSettingsEntry(menuEntries, config, areTempSettings);
+	};
+	auto menu = ftxui::Menu(&textMenuEntries, &selected, option);
+
+	auto renderer = ftxui::Renderer(menu, [&] {
+		return ftxui::vbox({ftxui::text(title), menu->Render()});
+	});
+
+	screen.Loop(renderer);
+	return returnValue;
 }
 
 std::string table(IEngine& engine)
