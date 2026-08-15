@@ -9,91 +9,31 @@
 
 namespace Config
 {
-
-    Path::Path(std::string directory, std::string filename)
-    {
-        this->directory = directory;
-        this->filename = filename;
-    }
-
-    Path::Path(ConfigFiles type, std::string fileSpecifier)
-    {
-        if (fileSpecifier == "")
-        {
-            Path requestedPath = unspecified_paths.at(type);
-            this->directory = requestedPath.directory;
-            this->filename = requestedPath.filename;
-        }
-        else
-        {
-            std::pair<Path, std::string> path_and_extension = specified_paths.at(type);
-            this->directory = path_and_extension.first.directory;
-            this->filename = fileSpecifier + path_and_extension.second;
-        }
-    }
-
-    std::string Path::getPath()
-    {
-        return directory + filename;
-    }
-
-#ifdef _WIN32
-    std::map<enum ConfigFiles, Path> Path::unspecified_paths =
-    {
-        std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
-        std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(getDir(CSIDL_APPDATA), "config.json")),
-        std::pair <enum ConfigFiles, Path> (ConfigFiles::Serverlist, Path(getDir(CSIDL_APPDATA), "serverlist.json")),
-        std::pair<enum ConfigFiles, Path>(ConfigFiles::LanguageFile, Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""))
+    const std::map<ConfigFiles, std::filesystem::path> paths{
+	{ConfigFiles::ABSTRACT,		{}},
+        {ConfigFiles::GameConfig,	"./config.json"},
+        {ConfigFiles::Serverlist,	"./serverlist.json"},
+	{ConfigFiles::LanguageFile,	"./language/"}
     };
 
-    std::map<enum ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
+    std::filesystem::path getPath(ConfigFiles configFiles, std::filesystem::path filename)
     {
-        std::pair<enum ConfigFiles, std::pair<Path, std::string>>
-        (
-            ConfigFiles::LanguageFile, 
-            std::pair<Path, std::string>(Path(getDir(CSIDL_PROGRAM_FILESX86) + "language\\", ""), ".json")
-        )
-    };
+	if(paths.at(configFiles).empty())
+	    return {};
 
-#else
-    std::map<enum ConfigFiles, Path> Path::unspecified_paths =
-    {
-	std::pair<ConfigFiles, Path>(ConfigFiles::ABSTRACT, Path("", "")),
-        std::pair <enum ConfigFiles, Path>(ConfigFiles::GameConfig, Path(".", "/config.json")),
-        std::pair<enum ConfigFiles, Path>(ConfigFiles::Serverlist, Path(".", "/serverlist.json")),
-	std::pair<enum ConfigFiles, Path>(ConfigFiles::LanguageFile, Path("language/", ""))
-    };
+	const char* home = std::getenv("HOME");
+	std::filesystem::path homeDir{};
+	if(home == nullptr)
+		throw std::invalid_argument("$HOME variable is not defined.");
+	homeDir = home;
+	homeDir /= ".TicTacToe";
 
-    std::map<ConfigFiles, std::pair<Path, std::string>> Path::specified_paths =
-    {
-        std::pair<ConfigFiles, std::pair<Path, std::string>>
-        (
-            ConfigFiles::LanguageFile,
-            std::pair<Path, std::string>(Path("language/", ""), ".json")
-        )
-    };
-
-#endif
-
-
-    std::string Path::getDir(int id)
-    {
-#ifdef _WIN32
-        LPWSTR strPath = new WCHAR[2048];
-        SHGetSpecialFolderPath(0, strPath, id, FALSE);
-        std::wstring ws_temp(strPath);
-        std::string dir(ws_temp.begin(), ws_temp.end());
-        delete[] strPath;
-
-        if (id == CSIDL_PROGRAM_FILESX86 || id == CSIDL_PROGRAM_FILES)
-            dir.append("\\egerk");
-
-        return dir.append("\\TicTacToe\\");
-#else
-
-        std::string homeDir = std::getenv("HOME");
-        return homeDir.append("/.TicTacToe/");
-#endif
+	std::filesystem::path path = homeDir / paths.at(configFiles);
+	if(path.string().back() == '/')
+	{
+		return path / filename;
+	}
+	return path;
     }
     
     bool Config::serialize()
@@ -110,13 +50,11 @@ namespace Config
         object["language"] = language;
         object["version"] = version;
 
-
-        std::filesystem::path path(this->path.directory);
-        if (!std::filesystem::exists(path))
+        if (!std::filesystem::exists(path.parent_path()))
         {
             try
             {
-                std::filesystem::create_directory(path);
+                std::filesystem::create_directory(path.parent_path());
             }
             catch (std::exception e)
             {
@@ -124,7 +62,7 @@ namespace Config
             }
         }
 
-        std::ofstream output(this->path.getPath());
+        std::ofstream output(this->path);
         output << Json::writeString(factory, object);
         output.close();
 
@@ -133,7 +71,7 @@ namespace Config
 
     bool Config::deserialize()
     {
-        std::ifstream input(path.getPath());
+        std::ifstream input(path);
 
         if (!input.good())
         {
@@ -220,8 +158,7 @@ namespace Config
     Language::Language(std::string name)
     {
         type = ConfigFiles::LanguageFile;
-        path = Path(ConfigFiles::LanguageFile, name);
-        path.filename = name;
+        path = getPath(ConfigFiles::LanguageFile, name + ".json");
         version = 2;
         bool functional = deserialize();
 
@@ -229,11 +166,11 @@ namespace Config
 
     bool Language::deserialize()
     {
-        std::ifstream input(path.getPath() + ".json");
+        std::ifstream input(path);
 
         if (!input.good())
         {
-            throw LanguageNotReadableException("Failed to load language file: " + path.filename);
+            throw LanguageNotReadableException("Failed to load language file: " + path.stem().string());
             return false;
         }
 
@@ -273,7 +210,7 @@ namespace Config
         try
         {
             languageList.clear();
-           for (const auto& entry : std::filesystem::directory_iterator(Path(ConfigFiles::LanguageFile).getPath()))
+           for (const auto& entry : std::filesystem::directory_iterator(getPath(ConfigFiles::LanguageFile)))
             {
                 Language lang = Language(entry.path().stem().string());
                 lang.deserialize();
@@ -345,14 +282,5 @@ namespace Config
         }
 
         return languageName.c_str();
-    }
-    const char* PathNotRetrievableException::what() const throw()
-    {
-        if (path == "")
-        {
-            return "Unknown path could not be retrieved";
-        }
-
-        return path.c_str();
     }
 }

@@ -4,11 +4,13 @@
 #include <memory>
 #include <vector>
 #include <exception>
+#include <filesystem>
 
 #include "Enums.h"
 
 namespace Config
 {
+
 
 	enum class ConfigFiles
 	{
@@ -18,29 +20,9 @@ namespace Config
 		LanguageFile
 	};
 
-	struct Path
-	{
-	public:
-		std::string directory;
-		std::string filename;
+	extern const std::map<ConfigFiles,std::filesystem::path> paths;
 
-		Path(ConfigFiles type, std::string fileSpecifier = "");
-		std::string getPath();
-	protected:
-		Path(std::string directory, std::string filename);
-	private:
-		static std::string getDir(int id);
-		static std::map <ConfigFiles, Path> unspecified_paths;
-		static std::map <ConfigFiles, std::pair<Path, std::string>> specified_paths;
-	};
-
-	class PathNotRetrievableException : std::exception
-	{
-		std::string path;
-	public:
-		PathNotRetrievableException(std::string path) : path(path) {};
-		const char* what() const throw();
-	};
+	std::filesystem::path getPath(ConfigFiles configFiles, std::filesystem::path filename = {});
 
 	class AbstractConfig
 	{
@@ -51,7 +33,7 @@ namespace Config
 	protected:
 
 		enum ConfigFiles type = ConfigFiles::ABSTRACT;
-		Path path = Path(ConfigFiles::ABSTRACT);
+		std::filesystem::path path = getPath(ConfigFiles::ABSTRACT);
 		int8_t version = 0;
 
 	};
@@ -73,7 +55,7 @@ namespace Config
 		Config()
 		{
 			type = ConfigFiles::GameConfig;
-			path = Path(ConfigFiles::GameConfig);
+			path = getPath(ConfigFiles::GameConfig);
 			version = 3;
 		}
 

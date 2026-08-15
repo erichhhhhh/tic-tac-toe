@@ -19,9 +19,11 @@ SRC = $(shell find src -name "*.cpp") \
 OUT = build/tictactoe
 
 all:
-	@mkdir -p build/language
+	@mkdir -p ~/.TicTacToe/language
+	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
-	cp -rf res/* build/language
+	cp -rf res/* ~/.TicTacToe/language
 
 clean:
+	rm -rf ~/.TicTacToe
 	rm -rf build
