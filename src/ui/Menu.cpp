@@ -1,5 +1,5 @@
 #include "Menu.h"
-#include "Config.h"
+#include <Language.h>
 
 Menu::Menu(std::vector<std::string> components, MenuInput inputType)
 {

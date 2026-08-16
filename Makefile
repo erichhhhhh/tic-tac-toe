@@ -3,6 +3,7 @@ CXXFLAGS = -std=c++20 -g \
 -Iinclude \
 -Iinclude/engine \
 -Iinclude/ui \
+-Iinclude/config \
 -I/usr/include \
 -Iexternal/jsoncpp/include \
 -Iexternal/rang/include \

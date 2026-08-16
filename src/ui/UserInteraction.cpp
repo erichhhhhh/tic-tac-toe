@@ -19,6 +19,7 @@
 #include <ftxui/dom/elements.hpp>
 
 #include "Config.h"
+#include <Language.h>
 #include "Menu.h"
 
 
