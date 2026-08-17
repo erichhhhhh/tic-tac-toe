@@ -1,6 +1,8 @@
 #pragma once
 #include <Config.h>
+#include <Enums.h>
 
+#include <unordered_map>
 namespace Config
 {
 	class Language : public AbstractConfig
@@ -11,7 +13,7 @@ namespace Config
 		std::string region;
 		bool functional = false;
 
-		std::map<std::string, std::string> translations;
+		std::unordered_map<std::string, std::string> translations;
 		std::map<std::string, char> maskedCharacter;
 
 		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
@@ -28,10 +30,49 @@ namespace Config
 
 		static std::vector<Language> getLanguageList(const bool reload = false);
 		static bool loadLanguage(std::string name);
-		static std::string getTranslation(std::string key);
+		static std::string getTranslation(const std::string& key);
 		std::string getFilename();
 		std::string getDisplayName();
 		std::string getRegion();
+		template<typename T>
+		static std::string getEnumTranslation(T value)
+		{
+			if constexpr (std::is_same_v<T, Symbol>)	
+			{
+				switch (value)
+				{
+					case Symbol::X:
+						return getTranslation("symbol.X");
+					case Symbol::O:
+						return getTranslation("symbol.O");
+				}
+			}
+			else if constexpr (std::is_same_v<T, Difficulty>)
+			{
+				switch (value)
+				{
+					case Difficulty::EASY:
+						return getTranslation("settings.difficulty.easy");
+					case Difficulty::MIDDLE:
+						return getTranslation("settings.difficulty.middle");
+					case Difficulty::HARD:
+						return getTranslation("settings.difficulty.hard");
+				}
+			}
+			else if constexpr (std::is_same_v<T, GameType>)
+			{
+				switch (value)
+				{
+					case GameType::PvP:
+						return getTranslation("settings.game_type.p_v_p");
+					case GameType::PvAI:
+						return getTranslation("settings.game_type.p_v_ai");
+					case GameType::AIvAI:
+						return getTranslation("settings.game_type.ai_v_ai");
+				}
+			}
+			return "";
+		}
 	};
 
 	class LanguageNotReadableException : public std::exception

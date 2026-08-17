@@ -88,7 +88,7 @@ namespace Config
         return true;
     }
 
-    std::string Language::getTranslation(std::string key)
+    std::string Language::getTranslation(const std::string& key)
     {
         if (loadedLanguage != nullptr)
         {
@@ -96,11 +96,7 @@ namespace Config
             {
                 return loadedLanguage->translations.at(key);
             }
-#ifndef _DEBUG
-            throw LanguageNotReadableException();
-#else
             return key;
-#endif
         }
         else
         {

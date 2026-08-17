@@ -25,6 +25,18 @@ enum class Symbol
 	O
 };
 
+inline Symbol operator!(Symbol symbol)
+{
+	switch (symbol)
+	{
+		case Symbol::X:
+			return Symbol::O;
+		case Symbol::O:
+			return Symbol::X;
+	}
+	return Symbol::X;
+}
+
 enum class Difficulty
 {
 	EASY,

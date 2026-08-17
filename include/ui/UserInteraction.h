@@ -76,7 +76,7 @@ void UI_pause();
 
 void clear();
 
-std::string buildOutput(std::string str, auto&&... args);
+std::string buildOutput(std::string_view str, auto&&... args);
 
 std::string getInput();
 

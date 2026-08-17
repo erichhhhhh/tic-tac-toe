@@ -23,7 +23,7 @@
 #include "Menu.h"
 
 
-std::string buildOutput(std::string str, auto&&... args)
+std::string buildOutput(std::string_view str, auto&&... args)
 {
 	return std::vformat(str, std::make_format_args(args...));
 }
@@ -31,33 +31,28 @@ std::string buildOutput(std::string str, auto&&... args)
 std::vector<std::string> refreshSettingsEntry(std::vector<SettingsMenuEntry>& menuEntries, Config::Config& config, bool areTempSettings)
 {
 	menuEntries.clear();
-	std::string symbolP1 = ((config.getPreferedSymbol() == Symbol::X) ? 
-			Config::Language::getTranslation("symbol.X") :
-			Config::Language::getTranslation("symbol.O"));
-	std::string symbolP2 = ((config.getPreferedSymbol() != Symbol::X) 
-			? Config::Language::getTranslation("symbol.X") 
-			: Config::Language::getTranslation("symbol.O"));
-	std::string playerAmount = ((config.getGameType() == GameType::AIvAI) ? 
-			Config::Language::getTranslation("settings.player_amount.computer_only") : 
-			(config.getGameType() == GameType::PvAI) ?
-			Config::Language::getTranslation("settings.player_amount.computer_and_player") : 
-			Config::Language::getTranslation("settings.player_amount.player_only"));
 	std::string isSymbolEnforced = (config.isSymbolEnforced() ?
 			Config::Language::getTranslation("settings.yes") :
 			Config::Language::getTranslation("settings.no"));
 	std::string firstPlayer = ((config.getFirstPlayer() == PlayerID::PLAYER1) ?
 			Config::Language::getTranslation("settings.yes") :
 			Config::Language::getTranslation("settings.no"));
-	std::string difficulty = ((config.getDifficulty() == Difficulty::EASY)
-			? Config::Language::getTranslation("settings.difficulty.easy") : (config.getDifficulty() == Difficulty::MIDDLE)
-			? Config::Language::getTranslation("settings.difficulty.medium") : Config::Language::getTranslation("settings.difficulty.hard"));
 
 	menuEntries = {
-		{Settings::Symbol, buildOutput(Config::Language::getTranslation("settings.symbol"), symbolP1, symbolP2)},
-		{Settings::GameType, buildOutput(Config::Language::getTranslation("settings.player_amount"), playerAmount)},
-		{Settings::EnforceSymbol, buildOutput(Config::Language::getTranslation("settings.is_symbol_enforced"), isSymbolEnforced)},
-		{Settings::FirstPlayer, buildOutput(Config::Language::getTranslation("settings.first_player"), firstPlayer)},
-		{Settings::Difficulty, buildOutput(Config::Language::getTranslation("settings.difficulty"), difficulty)}
+		{Settings::Symbol, 
+			buildOutput(Config::Language::getTranslation("settings.symbol"),
+					Config::Language::getEnumTranslation(config.getPreferedSymbol()),
+					Config::Language::getEnumTranslation(!config.getPreferedSymbol()))},
+		{Settings::GameType, 
+			buildOutput(Config::Language::getTranslation("settings.game_type"), 
+					Config::Language::getEnumTranslation(config.getGameType()))},
+		{Settings::EnforceSymbol, 
+			buildOutput(Config::Language::getTranslation("settings.is_symbol_enforced"), isSymbolEnforced)},
+		{Settings::FirstPlayer, 
+			buildOutput(Config::Language::getTranslation("settings.first_player"), firstPlayer)},
+		{Settings::Difficulty, 
+			buildOutput(Config::Language::getTranslation("settings.difficulty"),
+				Config::Language::getEnumTranslation(config.getDifficulty()))}
 	};
 
 	if(!areTempSettings)
