@@ -3,6 +3,7 @@
 tictactoe
 *.o
 *.out
+include/en-US.h
 
 # Neovim
 *.swp

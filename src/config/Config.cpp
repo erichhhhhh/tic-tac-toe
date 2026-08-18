@@ -5,12 +5,13 @@
 #include <fstream>
 #include <tuple>
 #include <json/json.h>
+#include <iostream>
 
 #define VERSION 2
 
 namespace Config
 {
-    const std::map<ConfigFiles, std::filesystem::path> paths{
+    const std::unordered_map<ConfigFiles, std::filesystem::path> paths{
 	{ConfigFiles::ABSTRACT,		{}},
         {ConfigFiles::GameConfig,	"./config.json"},
         {ConfigFiles::Serverlist,	"./serverlist.json"},
@@ -36,8 +37,50 @@ namespace Config
 	}
 	return path;
     }
+
+    bool AbstractConfig::serialize()
+    {
+	Json::StreamWriterBuilder factory;
+	Json::Value object = toJSON();
+	if(object.empty())
+		return false;
+
+	if (!std::filesystem::exists(path.parent_path()))
+        {
+		std::filesystem::create_directories(path.parent_path());
+        }
+
+        std::ofstream output(this->path);
+        output << Json::writeString(factory, object);
+        output.close();
+
+        return true;
+    }
+
+    bool AbstractConfig::deserialize()
+    {
+	std::ifstream input(path);
+
+        if (!input)
+        {
+		return false;
+	}
+
+        std::string jsonString;
+	std::ostringstream stream;
+	stream << input.rdbuf();
+	jsonString = stream.str();
+
+	if(path.extension() != ".json")
+		return false;
+
+        Json::Value object;
+        if(!Json::Reader().parse(jsonString, object))
+		return false;
+	return toConfig(object);
+    }
     
-    bool Config::serialize()
+    Json::Value Config::toJSON()
     {
         Json::StreamWriterBuilder factory;
         Json::Value object;
@@ -51,89 +94,47 @@ namespace Config
         object["language"] = language;
         object["version"] = version;
 
-        if (!std::filesystem::exists(path.parent_path()))
-        {
-            try
-            {
-                std::filesystem::create_directory(path.parent_path());
-            }
-            catch (std::exception e)
-            {
-                //std::cout << e.what() << std::endl;
-            }
-        }
-
-        std::ofstream output(this->path);
-        output << Json::writeString(factory, object);
-        output.close();
-
-        return true;
+	return object;
     }
 
-    bool Config::deserialize()
+    bool Config::toConfig(Json::Value& input)
     {
-        std::ifstream input(path);
-
-        if (!input.good())
+        if (input["version"].asInt() != VERSION)
         {
-            return false;
-        }
-
-        std::string jsonString;
-
-        if (input)
-        {
-            std::ostringstream stream;
-            stream << input.rdbuf();
-            jsonString = stream.str();
-        }
-
-        Json::Value object;
-        Json::Reader().parse(jsonString, object);
-
-        if (object["version"].asInt() != VERSION)
-        {
-            if (object["version"].asInt() == 1)
+            if (input["version"].asInt() == 1)
             {
-                object["difficulty"] = static_cast<int>(Difficulty::HARD);
+                input["difficulty"] = static_cast<int>(Difficulty::HARD);
             } 
-            else if (object["version"].asInt() == 2)
+            else if (input["version"].asInt() == 2)
             {
-                object["gameType"] = object["playerAmount"];
+                input["gameType"] = input["playerAmount"];
             }
         }
 
-        if (object["language"].isNull())
+        if (input["language"].isNull())
         {
             language = "en-US";
         }
         else
         {
-            language = object["language"].asString();
+            language = input["language"].asString();
         }
 
-        preferedSymbol = static_cast<enum Symbol>(object["preferedSymbol"].asInt());
-        gameType = static_cast<GameType>(object["gameType"].asInt());
-        enforceSymbol = object["enforceSymbol"].asBool();
-        firstPlayer = static_cast<enum PlayerID>(object["firstPlayer"].asInt());
-        showSettingsBeforeGame = object["showSettingsBeforeGame"].asBool();
-        difficulty = static_cast<enum Difficulty>(object["difficulty"].asInt());
+        preferedSymbol = static_cast<enum Symbol>(input["preferedSymbol"].asInt());
+        gameType = static_cast<GameType>(input["gameType"].asInt());
+        enforceSymbol = input["enforceSymbol"].asBool();
+        firstPlayer = static_cast<enum PlayerID>(input["firstPlayer"].asInt());
+        showSettingsBeforeGame = input["showSettingsBeforeGame"].asBool();
+        difficulty = static_cast<enum Difficulty>(input["difficulty"].asInt());
 
         return true;
     }
 
     bool Config::setLanguage(std::string lang)
     {
-        try
-        {
-            Language::loadLanguage(lang);
+            bool success = Language::loadLanguage(lang);
             language = lang;
-            return true;
-        }
-        catch (LanguageNotReadableException e)
-        {
-            return false;
-        }
+            return success;
     }
 
     bool Config::operator==(const Config& config) const

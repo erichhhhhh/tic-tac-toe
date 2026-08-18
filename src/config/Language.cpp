@@ -1,5 +1,7 @@
 #include <Language.h>
 
+#include <en-US.h>
+
 #include <fstream>
 #include <json/json.h>
 namespace Config
@@ -9,42 +11,20 @@ namespace Config
         type = ConfigFiles::LanguageFile;
         path = getPath(ConfigFiles::LanguageFile, name + ".json");
         version = 2;
-        bool functional = deserialize();
-
     }
 
-    bool Language::deserialize()
+    bool Language::toConfig(Json::Value& input)
     {
-        std::ifstream input(path);
-
-        if (!input.good())
-        {
-            throw LanguageNotReadableException("Failed to load language file: " + path.stem().string());
-            return false;
-        }
-
-        std::string jsonString;
-
-        if (input)
-        {
-            std::ostringstream stream;
-            stream << input.rdbuf();
-            jsonString = stream.str();
-        }
-
-        Json::Value object;
-        Json::Reader().parse(jsonString, object);
-
-        if (object["version"].asInt() == 1 || object["version"].isNull())
+        if (input["version"].asInt() == 1 || input["version"].isNull())
         {
             return false;
         }
 
-        filename = object["filename"].asString();
-        displayName = object["displayName"].asString();
-        region = object["region"].asString();
+        filename = input["filename"].asString();
+        displayName = input["displayName"].asString();
+        region = input["region"].asString();
 
-        const Json::Value& translationsJSON = object["translations"];
+        const Json::Value& translationsJSON = input["translations"];
         for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
         {
             const Json::Value& translation = translationsJSON[i];
@@ -54,7 +34,23 @@ namespace Config
         return true;
     }
 
-    void Language::loadLanguageList()
+    void Language::provideEmergencyTranslations()
+    {
+	    const std::string jsonString(emergency_translation);
+	    Json::Value object;
+	   
+	    if(!Json::Reader().parse(jsonString, object))
+		    return;
+
+	    const Json::Value& translationsJSON = object["translations"];
+	    for (Json::Value::ArrayIndex i = 0; i < translationsJSON.size(); i++)
+	    {
+		    const Json::Value& translation = translationsJSON[i];
+		    emergencyTranslations.insert(std::pair<std::string, std::string>(translation[0].asString(), translation[1].asString()));
+	    }
+    }
+
+    bool Language::loadLanguageList()
     {
         try
         {
@@ -62,13 +58,15 @@ namespace Config
            for (const auto& entry : std::filesystem::directory_iterator(getPath(ConfigFiles::LanguageFile)))
             {
                 Language lang = Language(entry.path().stem().string());
-                lang.deserialize();
-                languageList.push_back(lang);
+                if(lang.deserialize())
+	                languageList.push_back(lang);
             }
+	   return true;
         }
-        catch (std::exception e)
+        catch (std::filesystem::filesystem_error& e)
         {
-            throw LanguageNotReadableException();
+            languageList.clear();
+	    return false;
         }
     }
 
@@ -84,8 +82,11 @@ namespace Config
     bool Language::loadLanguage(std::string name)
     {
         Language lang = Language(name);
+	bool success = lang.deserialize();
         loadedLanguage = std::make_unique<Language>(lang);
-        return true;
+	if(loadedLanguage == nullptr || !success)
+	        return false;
+	return true;
     }
 
     std::string Language::getTranslation(const std::string& key)
@@ -93,15 +94,20 @@ namespace Config
         if (loadedLanguage != nullptr)
         {
             if (loadedLanguage->translations.contains(key))
-            {
-                return loadedLanguage->translations.at(key);
-            }
-            return key;
+            	return loadedLanguage->translations.at(key);
         }
-        else
-        {
-            throw LanguageNotReadableException();
-        }
+
+	if(emergencyTranslations.empty())
+		provideEmergencyTranslations();
+
+	if(emergencyTranslations.contains(key))
+	{
+		return emergencyTranslations.at(key);
+	}
+	else
+	{
+		return key;
+	}
     }
 
     std::string Language::getFilename()
@@ -118,14 +124,4 @@ namespace Config
     {
         return region;
     }
-
-    const char* LanguageNotReadableException::what() const throw()
-    {
-        if (languageName == "")
-        {
-            return "Attempted to access or failed to load unloaded language resource";
-        }
-
-        return languageName.c_str();
-    }	
 }

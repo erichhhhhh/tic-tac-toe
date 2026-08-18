@@ -10,7 +10,8 @@ CXXFLAGS = -std=c++20 -g \
 -L/usr/lib64 \
 -lftxui-component \
 -lftxui-dom \
--lftxui-screen
+-lftxui-screen \
+--debug
 
 SRC = $(shell find src -name "*.cpp") \
       external/jsoncpp/src/lib_json/json_reader.cpp \
@@ -22,9 +23,11 @@ OUT = build/tictactoe
 all:
 	@mkdir -p ~/.TicTacToe/language
 	@mkdir -p build
+	python tools/create_bakedin_translation.py
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 	cp -rf res/* ~/.TicTacToe/language
 
 clean:
+	rm include/en-US.h
 	rm -rf ~/.TicTacToe
 	rm -rf build

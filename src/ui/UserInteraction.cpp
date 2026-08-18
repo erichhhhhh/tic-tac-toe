@@ -87,11 +87,18 @@ void languageSettings(Config::Config& config)
 
 	int selected = 0;
 
-	for(Config::Language language : langlist)
+	if(langlist.empty())
 	{
-		menuEntries.push_back(buildOutput(Config::Language::getTranslation("settings.language.entry"),  
-					language.getDisplayName(),
-					language.getRegion()));
+		menuEntries.push_back("No translations available, using built in translations");
+	}
+	else
+	{
+		for(Config::Language language : langlist)
+		{
+			menuEntries.push_back(buildOutput(Config::Language::getTranslation("settings.language.entry"),  
+						language.getDisplayName(),
+						language.getRegion()));
+		}
 	}
 
 	ftxui::MenuOption option;
@@ -103,8 +110,11 @@ void languageSettings(Config::Config& config)
 	});
 
 	screen.Loop(renderer);
-
-	config.setLanguage(langlist.at(selected).getFilename());
+	if(!langlist.empty())
+	{
+		config.setLanguage(langlist.at(selected).getFilename());
+		Config::Language::loadLanguage(config.getLanguage());
+	}
 	return;
 }
 

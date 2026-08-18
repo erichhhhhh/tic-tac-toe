@@ -3,6 +3,7 @@
 #include <Enums.h>
 
 #include <unordered_map>
+#include <vector>
 namespace Config
 {
 	class Language : public AbstractConfig
@@ -11,21 +12,20 @@ namespace Config
 		std::string filename;
 		std::string displayName;
 		std::string region;
-		bool functional = false;
 
 		std::unordered_map<std::string, std::string> translations;
-		std::map<std::string, char> maskedCharacter;
+		static inline std::unordered_map<std::string, std::string> emergencyTranslations;
 
 		static inline std::unique_ptr<Language> loadedLanguage = nullptr;
 		static inline std::vector<Language> languageList;
 
-		bool deserialize() override;
-		bool serialize() override { return false; }
+		bool toConfig(Json::Value& input) override;
+		Json::Value toJSON() override { return ""; }
 
 		Language(std::string name);
 
-		static void loadLanguageList();
-
+		static bool loadLanguageList();
+		static void provideEmergencyTranslations();
 	public:
 
 		static std::vector<Language> getLanguageList(const bool reload = false);
@@ -74,14 +74,4 @@ namespace Config
 			return "";
 		}
 	};
-
-	class LanguageNotReadableException : public std::exception
-	{
-	private:
-		std::string languageName;
-	public:
-		LanguageNotReadableException(std::string langName = "") { languageName = langName; }
-		const char* what() const throw();
-	};
-	
 }

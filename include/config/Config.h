@@ -1,11 +1,8 @@
 #pragma once
-#include <map>
+#include <unordered_map>
 #include <string>
-#include <memory>
-#include <vector>
-#include <exception>
 #include <filesystem>
-
+#include <json/json.h>
 #include "Enums.h"
 
 namespace Config
@@ -20,15 +17,18 @@ namespace Config
 		LanguageFile
 	};
 
-	extern const std::map<ConfigFiles,std::filesystem::path> paths;
+	extern const std::unordered_map<ConfigFiles,std::filesystem::path> paths;
 
 	std::filesystem::path getPath(ConfigFiles configFiles, std::filesystem::path filename = {});
 
 	class AbstractConfig
 	{
+	private:
+		virtual Json::Value toJSON() = 0;
+		virtual bool toConfig(Json::Value& input) = 0;
 	public:
-		virtual bool serialize() = 0;
-		virtual bool deserialize() = 0;
+		bool serialize();
+		bool deserialize();
 
 	protected:
 
@@ -59,8 +59,8 @@ namespace Config
 			version = 3;
 		}
 
-		bool serialize() override;
-		bool deserialize() override;
+		Json::Value toJSON() override;
+		bool toConfig(Json::Value& input) override;
 
 		Symbol getPreferedSymbol() const{ return preferedSymbol; }
 		void setPreferedSymbol(const Symbol& symbol) { preferedSymbol = symbol; }
