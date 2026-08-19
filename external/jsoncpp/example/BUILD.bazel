@@ -33,3 +33,9 @@ cc_binary(
     srcs = ["stringWrite/stringWrite.cpp"],
     deps = ["//:jsoncpp"],
 )
+
+cc_binary(
+    name = "stringView",
+    srcs = ["stringView/stringView.cpp"],
+    deps = ["//:jsoncpp"],
+)

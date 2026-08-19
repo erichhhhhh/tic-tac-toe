@@ -2,6 +2,9 @@ name: meson build and test
 run-name: update pushed to ${{ github.ref }}
 on: [check_run, push, pull_request]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   meson-publish:
     runs-on: ${{ matrix.os }}
@@ -17,6 +20,8 @@ jobs:
         
       - name: setup python
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       
       - name: meson build
         uses: BSFishy/meson-build@v1.0.3
@@ -41,6 +46,8 @@ jobs:
         
       - name: setup python
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       
       - name: meson build
         uses: BSFishy/meson-build@v1.0.3

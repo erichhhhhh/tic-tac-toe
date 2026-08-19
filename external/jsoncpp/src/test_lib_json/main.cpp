@@ -29,6 +29,11 @@
 
 using CharReaderPtr = std::unique_ptr<Json::CharReader>;
 
+namespace Json {
+// Defined in json_reader.cpp; test instrumentation seam.
+JSON_API size_t& newlineScanByteCountForTesting();
+} // namespace Json
+
 // Make numeric limits more convenient to talk about.
 // Assumes int type in 32 bits.
 #define kint32max Json::Value::maxInt
@@ -1993,7 +1998,8 @@ JSONTEST_FIXTURE_LOCAL(ValueTest, StaticString) {
 
 JSONTEST_FIXTURE_LOCAL(ValueTest, WideString) {
   // https://github.com/open-source-parsers/jsoncpp/issues/756
-  const std::string uni = u8"\u5f0f\uff0c\u8fdb"; // "式，进"
+  const std::string uni =
+      reinterpret_cast<const char*>(u8"\u5f0f\uff0c\u8fdb"); // "式，进"
   std::string styled;
   {
     Json::Value v;
@@ -3109,9 +3115,9 @@ JSONTEST_FIXTURE_LOCAL(ReaderTest, strictModeParseNumber) {
 }
 
 JSONTEST_FIXTURE_LOCAL(ReaderTest, parseChineseWithOneError) {
-  checkParse(R"({ "pr)"
-             u8"\u4f50\u85e4" // 佐藤
-             R"(erty" :: "value" })",
+  checkParse(reinterpret_cast<const char*>(R"({ "pr)"
+                                           u8"\u4f50\u85e4" // 佐藤
+                                           R"(erty" :: "value" })"),
              {{18, 19, "Syntax error: value, object or array expected."}},
              "* Line 1, Column 19\n  Syntax error: value, object or array "
              "expected.\n");
@@ -3223,7 +3229,8 @@ JSONTEST_FIXTURE_LOCAL(CharReaderTest, parseString) {
     bool ok = reader->parse(doc, doc + std::strlen(doc), &root, &errs);
     JSONTEST_ASSERT(ok);
     JSONTEST_ASSERT(errs.empty());
-    JSONTEST_ASSERT_EQUAL(u8"\u8A2a", root[0].asString()); // "訪"
+    JSONTEST_ASSERT_EQUAL(reinterpret_cast<const char*>(u8"\u8A2a"),
+                          root[0].asString()); // "訪"
   }
   {
     char const doc[] = R"([ "\uD801" ])";
@@ -3304,6 +3311,42 @@ JSONTEST_FIXTURE_LOCAL(CharReaderTest, parseComment) {
     JSONTEST_ASSERT_EQUAL("value", root[0]);
     JSONTEST_ASSERT_EQUAL(true, root[1]);
   }
+}
+
+JSONTEST_FIXTURE_LOCAL(CharReaderTest, parseCommentsAfterValueScansLinearly) {
+  // A value, then a comment whose only newline is at its end, then many
+  // trailing comments. Comment handling should scan the value->comment gap a
+  // bounded number of times (linear in the input), not once per trailing
+  // comment (O(comments * gap)). Assert directly on bytes scanned
+  // (deterministic) rather than wall-clock time (flaky under valgrind/CI).
+  //
+  // Regression test for crbug.com/521541633 (jsoncpp_fuzzer timeout: a 400KB
+  // input scanned 2.24GB across 8384 containsNewLine calls, ~18s).
+  const int kFiller = 256;
+  const int kComments = 1000;
+  std::string doc = "[0 /*";
+  doc.append(kFiller, 'a');
+  doc += "\n*/";
+  for (int i = 0; i < kComments; ++i)
+    doc += "/*c*/";
+  doc += "]";
+
+  Json::CharReaderBuilder b;
+  CharReaderPtr reader(b.newCharReader());
+  Json::Value root;
+  Json::String errs;
+
+  Json::newlineScanByteCountForTesting() = 0;
+  const bool ok =
+      reader->parse(doc.data(), doc.data() + doc.size(), &root, &errs);
+
+  JSONTEST_ASSERT(ok);
+  JSONTEST_ASSERT(errs.empty());
+  JSONTEST_ASSERT_EQUAL(0, root[0]);
+  // Quadratic-regression guard. Linear scans ~O(input); the bug scanned
+  // ~kComments * kFiller (~2.7M here vs a few bytes fixed).
+  const size_t scanned = Json::newlineScanByteCountForTesting();
+  JSONTEST_ASSERT(scanned < 4 * doc.size());
 }
 
 JSONTEST_FIXTURE_LOCAL(CharReaderTest, parseObjectWithErrors) {
@@ -3924,6 +3967,54 @@ JSONTEST_FIXTURE_LOCAL(BomTest, notSkipBom) {
 
 struct IteratorTest : JsonTest::TestCase {};
 
+JSONTEST_FIXTURE_LOCAL(IteratorTest, members) {
+  Json::Value j;
+  j["k1"] = "a";
+  j["k2"] = "b";
+
+  std::vector<std::string> keys;
+  std::vector<std::string> values;
+
+  for (const auto& member : j.members()) {
+    keys.push_back(member.name);
+    values.push_back(member.value.asString());
+  }
+
+  JSONTEST_ASSERT((keys == std::vector<std::string>{"k1", "k2"}));
+  JSONTEST_ASSERT((values == std::vector<std::string>{"a", "b"}));
+
+  // Test modification through value reference
+  for (const auto& member : j.members()) {
+    member.value = "c";
+  }
+
+  JSONTEST_ASSERT(j["k1"].asString() == "c");
+
+  // Test const members
+  const Json::Value& cj = j;
+  keys.clear();
+  values.clear();
+
+  for (const auto& member : cj.members()) {
+    keys.push_back(member.name);
+    values.push_back(member.value.asString());
+  }
+
+  JSONTEST_ASSERT((keys == std::vector<std::string>{"k1", "k2"}));
+  JSONTEST_ASSERT((values == std::vector<std::string>{"c", "c"}));
+
+#if __cplusplus >= 201703L
+  keys.clear();
+  values.clear();
+  for (auto const& [k, v] : cj.members()) {
+    keys.push_back(k);
+    values.push_back(v.asString());
+  }
+  JSONTEST_ASSERT((keys == std::vector<std::string>{"k1", "k2"}));
+  JSONTEST_ASSERT((values == std::vector<std::string>{"c", "c"}));
+#endif
+}
+
 JSONTEST_FIXTURE_LOCAL(IteratorTest, convert) {
   Json::Value j;
   const Json::Value& cj = j;
@@ -4186,6 +4277,11 @@ JSONTEST_FIXTURE_LOCAL(VersionTest, VersionNumbersMatch) {
   vstr << JSONCPP_VERSION_MAJOR << '.' << JSONCPP_VERSION_MINOR << '.'
        << JSONCPP_VERSION_PATCH;
   JSONTEST_ASSERT_EQUAL(vstr.str(), std::string(JSONCPP_VERSION_STRING));
+}
+
+JSONTEST_FIXTURE_LOCAL(VersionTest, RuntimeVersionString) {
+  JSONTEST_ASSERT_EQUAL(std::string(JSONCPP_VERSION_STRING),
+                        std::string(Json::version()));
 }
 
 #if defined(__GNUC__)
